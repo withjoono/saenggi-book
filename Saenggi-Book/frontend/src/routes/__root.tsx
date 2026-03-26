@@ -1,6 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { MsHeader } from "@/components/ms-header";
+import { SbHeader } from "@/components/sb-header";
 import { GradeAnalysisHeader } from "@/components/grade-analysis-header";
 import ScrollToTop from "@/components/scroll-to-top";
 import { Toaster } from "@/components/ui/sonner";
@@ -23,7 +23,7 @@ function RootLayout() {
       if (ssoSuccess) {
         toast.success('Hub에서 자동 로그인되었습니다.');
         setTimeout(() => {
-          window.location.href = '/ms/dashboard';
+          window.location.href = '/sb/dashboard';
         }, 500);
       }
       setIsSSOLoading(false);
@@ -34,12 +34,12 @@ function RootLayout() {
 
   const isTestPage = location.pathname === "/test/auth-me" || location.pathname === "/test/login-debug";
   const isAuthPage = location.pathname.startsWith("/auth/");
-  const isMsMode = location.pathname.startsWith("/ms");
+  const isSbMode = location.pathname.startsWith("/sb");
   const isGradeAnalysisMode = location.pathname.startsWith("/grade-analysis");
 
   const renderHeader = () => {
     if (isTestPage || isAuthPage) return null;
-    if (isMsMode) return <MsHeader />;
+    if (isSbMode) return <SbHeader />;
     if (isGradeAnalysisMode) return <GradeAnalysisHeader />;
     return <Header />;
   };

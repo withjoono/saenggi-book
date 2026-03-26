@@ -1,0 +1,22 @@
+{
+  "projects": {
+    "default": "ts-front-479305"
+  },
+  "targets": {
+    "ts-front-479305": {
+      "hosting": {
+        "sb": [
+          "ms-front"
+        ]
+      }
+    },
+    "ts-back-nest-479305": {
+      "hosting": {
+        "sb": [
+          "ms-front"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

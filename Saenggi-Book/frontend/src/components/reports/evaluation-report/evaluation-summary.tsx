@@ -80,7 +80,7 @@ export const EvaluationSummary = ({ scoreAvgs }: EvaluationSummaryProps) => {
         <h2 className="text-xl font-semibold md:text-2xl">📊 주요 평가</h2>
         <p className="text-foreground/60">
           대학에서 가장 많이보는 유형을 기준으로 평가한 내용이에요.{" "}
-          <Link to="/ms/comprehensive" className="text-blue-500">
+          <Link to="/sb/comprehensive" className="text-blue-500">
             학종 분석 및 대학 찾기 서비스
           </Link>
           에서는 내 평가 점수를 바탕으로 대학별 평가요소에 맞춰 각각 계산하기

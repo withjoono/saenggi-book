@@ -123,7 +123,7 @@ export const InterestSubject = React.memo(
             관심대학으로 선택된 대학 목록이 비어있어요 🥲
           </p>
           <p className="text-sm text-foreground/70">
-            <Link to="/ms/subject" className="text-blue-500">
+            <Link to="/sb/subject" className="text-blue-500">
               교과탭
             </Link>
             에서 대학을 탐색해서 관심목록에 담아보세요!

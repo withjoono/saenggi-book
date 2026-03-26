@@ -57,19 +57,19 @@ interface ImageBannerSlide {
 
 const gradeBannerSlides: Record<"0" | "1" | "2", ImageBannerSlide[]> = {
   "0": [
-    { id: 1, image: "/banner/grade1/hakjong.jpg", href: "/ms/hakjong", alt: "학종 예측 시스템" },
-    { id: 2, image: "/banner/grade1/gyogwa.jpg", href: "/ms/gyogwa", alt: "교과 예측 시스템" },
-    { id: 3, image: "/banner/grade1/nonsul.jpg", href: "/ms/nonsul", alt: "논술 예측 시스템" },
+    { id: 1, image: "/banner/grade1/hakjong.jpg", href: "/sb/hakjong", alt: "학종 예측 시스템" },
+    { id: 2, image: "/banner/grade1/gyogwa.jpg", href: "/sb/gyogwa", alt: "교과 예측 시스템" },
+    { id: 3, image: "/banner/grade1/nonsul.jpg", href: "/sb/nonsul", alt: "논술 예측 시스템" },
   ],
   "1": [
-    { id: 1, image: "/banner/grade1/hakjong.jpg", href: "/ms/hakjong", alt: "학종 예측 시스템" },
-    { id: 2, image: "/banner/grade1/gyogwa.jpg", href: "/ms/gyogwa", alt: "교과 예측 시스템" },
-    { id: 3, image: "/banner/grade1/nonsul.jpg", href: "/ms/nonsul", alt: "논술 예측 시스템" },
+    { id: 1, image: "/banner/grade1/hakjong.jpg", href: "/sb/hakjong", alt: "학종 예측 시스템" },
+    { id: 2, image: "/banner/grade1/gyogwa.jpg", href: "/sb/gyogwa", alt: "교과 예측 시스템" },
+    { id: 3, image: "/banner/grade1/nonsul.jpg", href: "/sb/nonsul", alt: "논술 예측 시스템" },
   ],
   "2": [
-    { id: 1, image: "/banner/grade2/hakjong.jpg", href: "/ms/hakjong", alt: "학종 예측 시스템" },
-    { id: 2, image: "/banner/grade2/gyogwa.jpg", href: "/ms/gyogwa", alt: "교과 예측 시스템" },
-    { id: 3, image: "/banner/grade2/nonsul.jpg", href: "/ms/nonsul", alt: "논술 예측 시스템" },
+    { id: 1, image: "/banner/grade2/hakjong.jpg", href: "/sb/hakjong", alt: "학종 예측 시스템" },
+    { id: 2, image: "/banner/grade2/gyogwa.jpg", href: "/sb/gyogwa", alt: "교과 예측 시스템" },
+    { id: 3, image: "/banner/grade2/nonsul.jpg", href: "/sb/nonsul", alt: "논술 예측 시스템" },
   ],
 };
 

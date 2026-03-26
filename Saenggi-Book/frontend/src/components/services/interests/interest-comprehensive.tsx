@@ -142,7 +142,7 @@ export const InterestComprehensive = React.memo(
             관심대학으로 선택된 대학 목록이 비어있어요 🥲
           </p>
           <p className="text-sm text-foreground/70">
-            <Link to="/ms/comprehensive" className="text-blue-500">
+            <Link to="/sb/comprehensive" className="text-blue-500">
               학종탭
             </Link>
             에서 대학을 탐색해서 관심목록에 담아보세요!

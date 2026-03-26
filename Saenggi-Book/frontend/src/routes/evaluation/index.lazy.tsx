@@ -96,7 +96,7 @@ function EvaluationIntro() {
               AI가 아닌 실제 평가자가 생기부를 평가하고 점수 및 꼼꼼한 주석을
               통해 나에게 맞는 입시 전략을 세우는{" "}
               <b className="text-red-500">유료 서비스</b> 입니다. 해당 평가는{" "}
-              <Link to="/ms/comprehensive" className="text-blue-500">
+              <Link to="/sb/comprehensive" className="text-blue-500">
                 학종 탐색
               </Link>
               과 연계되어 각 대학별 평가요소에 따른 점수를 예측하는데

@@ -1,0 +1,411 @@
+{
+  "$schema": "./feature-map.schema.json",
+  "version": "1.1.0",
+  "lastUpdated": "2026-03-24",
+  "features": {
+    "susi": {
+      "name": "수시",
+      "status": "active",
+      "category": "admission",
+      "description": "수시 입시 분석 서비스",
+      "routes": [],
+      "components": [
+        "src/components/services/explore/early-comprehensive/**/*",
+        "src/components/services/explore/early-subject/**/*"
+      ],
+      "stores": [
+        "src/stores/server/features/susi/comprehensive/apis.ts",
+        "src/stores/server/features/susi/comprehensive/interfaces.ts",
+        "src/stores/server/features/susi/comprehensive/queries.ts",
+        "src/stores/server/features/susi/subject/apis.ts",
+        "src/stores/server/features/susi/subject/interfaces.ts",
+        "src/stores/server/features/susi/subject/queries.ts",
+        "src/stores/server/features/susi/evaluation/apis.ts",
+        "src/stores/server/features/susi/evaluation/interfaces.ts",
+        "src/stores/server/features/susi/evaluation/mutations.ts",
+        "src/stores/server/features/susi/evaluation/queries.ts",
+        "src/stores/server/features/susi/interest-univ/apis.ts",
+        "src/stores/server/features/susi/interest-univ/interfaces.ts",
+        "src/stores/server/features/susi/interest-univ/mutations.ts",
+        "src/stores/server/features/susi/interest-univ/queries.ts",
+        "src/stores/server/features/susi/pass-record/apis.ts",
+        "src/stores/server/features/susi/pass-record/interfaces.ts",
+        "src/stores/server/features/susi/pass-record/queries.ts"
+      ],
+      "calculations": [
+        "src/lib/calculations/evaluation/**/*",
+        "src/lib/calculations/compatibility/**/*",
+        "src/lib/calculations/subject/**/*",
+        "src/lib/calculations/school-record/**/*"
+      ],
+      "utils": [
+        "src/lib/utils/services/compatibility.ts",
+        "src/lib/utils/services/evaluation.ts",
+        "src/lib/utils/services/subject.ts"
+      ],
+      "dependencies": ["static-data", "auth", "me"]
+    },
+    "explore": {
+      "name": "탐색",
+      "status": "active",
+      "category": "admission",
+      "description": "전형 검색 서비스",
+      "routes": [
+        "src/routes/explore/admission.tsx",
+        "src/routes/explore/early-comprehensive.lazy.tsx",
+        "src/routes/explore/early-subject.lazy.tsx",
+        "src/routes/explore/recruitment-unit.tsx",
+        "src/routes/explore/university.tsx"
+      ],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/explore/early-comprehensive/apis.ts",
+        "src/stores/server/features/explore/early-comprehensive/interfaces.ts",
+        "src/stores/server/features/explore/early-comprehensive/queries.ts",
+        "src/stores/server/features/explore/early-subject/apis.ts",
+        "src/stores/server/features/explore/early-subject/interfaces.ts",
+        "src/stores/server/features/explore/early-subject/queries.ts",
+        "src/stores/server/features/explore/search/apis.ts",
+        "src/stores/server/features/explore/search/interfaces.ts",
+        "src/stores/server/features/explore/search/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [
+        "src/lib/utils/services/university.ts"
+      ],
+      "dependencies": ["static-data"]
+    },
+    "grade-analysis": {
+      "name": "성적분석",
+      "status": "active",
+      "category": "admission",
+      "description": "성적 분석 및 생기부 관리",
+      "routes": [
+        "src/routes/grade-analysis/index.lazy.tsx",
+        "src/routes/grade-analysis/route.tsx",
+        "src/routes/grade-analysis/_layout.tsx",
+        "src/routes/grade-analysis/_layout.comprehensive.lazy.tsx",
+        "src/routes/grade-analysis/_layout.evaluation-list.lazy.tsx",
+        "src/routes/grade-analysis/_layout.nonsul.lazy.tsx",
+        "src/routes/grade-analysis/_layout.performance.lazy.tsx",
+        "src/routes/grade-analysis/_layout.request.lazy.tsx",
+        "src/routes/grade-analysis/_layout.school-record.lazy.tsx",
+        "src/routes/grade-analysis/_layout.subject.lazy.tsx"
+      ],
+      "components": [
+        "src/components/services/life-record/**/*"
+      ],
+      "stores": [],
+      "calculations": [
+        "src/lib/calculations/school-record/**/*"
+      ],
+      "utils": [],
+      "dependencies": ["auth", "me", "spring"]
+    },
+    "officer": {
+      "name": "입학사정관",
+      "status": "active",
+      "category": "evaluation",
+      "description": "입학사정관 서비스",
+      "routes": [
+        "src/routes/officer/_layout.tsx",
+        "src/routes/officer/_layout/profile.lazy.tsx",
+        "src/routes/officer/_layout/apply.index.lazy.tsx",
+        "src/routes/officer/_layout/apply.$studentId.lazy.tsx"
+      ],
+      "components": [],
+      "stores": [],
+      "validations": [
+        "src/lib/validations/edit-officer-profile.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": ["auth", "spring"]
+    },
+    "evaluation": {
+      "name": "평가",
+      "status": "active",
+      "category": "evaluation",
+      "description": "평가 서비스",
+      "routes": [
+        "src/routes/evaluation/index.lazy.tsx",
+        "src/routes/evaluation/_layout.tsx",
+        "src/routes/evaluation/_layout/compatibility.lazy.tsx",
+        "src/routes/evaluation/_layout/list.lazy.tsx",
+        "src/routes/evaluation/_layout/request.lazy.tsx",
+        "src/routes/evaluation/_layout/self.edit.lazy.tsx",
+        "src/routes/evaluation/_layout/self.index.lazy.tsx"
+      ],
+      "components": [
+        "src/components/services/evaluation/**/*"
+      ],
+      "stores": [],
+      "calculations": [
+        "src/lib/calculations/evaluation/**/*",
+        "src/lib/calculations/compatibility/**/*"
+      ],
+      "utils": [
+        "src/lib/utils/services/evaluation.ts",
+        "src/lib/utils/services/compatibility.ts"
+      ],
+      "dependencies": ["auth", "me", "susi"]
+    },
+    "products": {
+      "name": "상품",
+      "status": "active",
+      "category": "payment",
+      "description": "상품 관리",
+      "routes": [
+        "src/routes/products/index.tsx"
+      ],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/products/apis.ts",
+        "src/stores/server/features/products/interfaces.ts",
+        "src/stores/server/features/products/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": []
+    },
+    "payments": {
+      "name": "결제",
+      "status": "active",
+      "category": "payment",
+      "description": "결제 서비스",
+      "routes": [
+        "src/routes/order/$productId.tsx"
+      ],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/payments/apis.ts",
+        "src/stores/server/features/payments/interfaces.ts",
+        "src/stores/server/features/payments/mutations.ts",
+        "src/stores/server/features/payments/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": ["auth", "me", "products"]
+    },
+    "auth": {
+      "name": "인증",
+      "status": "active",
+      "category": "system",
+      "description": "로그인/회원가입",
+      "routes": [
+        "src/routes/auth/login.tsx",
+        "src/routes/auth/register.tsx",
+        "src/routes/auth/reset-password.tsx"
+      ],
+      "components": [
+        "src/components/login-form-simple.tsx"
+      ],
+      "stores": [
+        "src/stores/server/features/auth/apis.ts",
+        "src/stores/server/features/auth/interfaces.ts",
+        "src/stores/server/features/auth/mutations.ts"
+      ],
+      "clientStores": [
+        "src/stores/client/use-auth-store.tsx",
+        "src/stores/client/use-social-sign-up.tsx"
+      ],
+      "validations": [
+        "src/lib/validations/auth.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": []
+    },
+    "boards": {
+      "name": "게시판",
+      "status": "active",
+      "category": "system",
+      "description": "공지사항, FAQ 등",
+      "routes": [
+        "src/routes/official/notice.index.lazy.tsx",
+        "src/routes/official/notice.$postId.lazy.tsx",
+        "src/routes/official/faq.lazy.tsx",
+        "src/routes/official/guide.lazy.tsx"
+      ],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/boards/apis.ts",
+        "src/stores/server/features/boards/interfaces.ts",
+        "src/stores/server/features/boards/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": []
+    },
+    "me": {
+      "name": "사용자",
+      "status": "active",
+      "category": "system",
+      "description": "사용자 정보 관리",
+      "routes": [],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/me/apis.ts",
+        "src/stores/server/features/me/interfaces.ts",
+        "src/stores/server/features/me/mutations.ts",
+        "src/stores/server/features/me/queries.ts"
+      ],
+      "validations": [
+        "src/lib/validations/edit-profile.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": ["auth"]
+    },
+    "static-data": {
+      "name": "정적데이터",
+      "status": "active",
+      "category": "system",
+      "description": "대학/전형 등 정적 데이터",
+      "routes": [],
+      "components": [],
+      "stores": [
+        "src/stores/server/features/static-data/apis.ts",
+        "src/stores/server/features/static-data/interfaces.ts",
+        "src/stores/server/features/static-data/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": []
+    },
+    "spring": {
+      "name": "Spring 연동",
+      "status": "active",
+      "category": "system",
+      "description": "Spring 백엔드 전용 API",
+      "routes": [],
+      "components": [
+        "src/components/services/uploader/**/*"
+      ],
+      "stores": [
+        "src/stores/server/features/spring/apis.ts",
+        "src/stores/server/features/spring/queries.ts",
+        "src/stores/server/features/additional-file/apis.ts",
+        "src/stores/server/features/additional-file/interfaces.ts",
+        "src/stores/server/features/additional-file/mutations.ts",
+        "src/stores/server/features/additional-file/queries.ts"
+      ],
+      "calculations": [],
+      "utils": [],
+      "dependencies": ["auth"]
+    }
+  },
+  "shared": {
+    "api": {
+      "warning": "수정 시 전체 API 호출에 영향",
+      "files": [
+        "src/lib/api/index.ts",
+        "src/lib/api/instances.ts",
+        "src/lib/api/token-manager.ts",
+        "src/lib/api/interceptors/request.ts",
+        "src/lib/api/interceptors/response.ts",
+        "src/lib/api/interceptors/setup.ts",
+        "src/lib/api/interceptors/token-refresh.ts"
+      ],
+      "affectsAll": true
+    },
+    "errors": {
+      "warning": "수정 시 전체 에러 처리에 영향",
+      "files": [
+        "src/lib/errors/error-codes.ts",
+        "src/lib/errors/error-handler.ts"
+      ],
+      "affectsAll": true
+    },
+    "config": {
+      "warning": "수정 시 환경 설정에 영향",
+      "files": [
+        "src/lib/config/env.ts"
+      ],
+      "affectsAll": true
+    },
+    "atoms": {
+      "warning": "수정 시 전역 상태에 영향",
+      "files": [
+        "src/stores/atoms/tokens.ts",
+        "src/stores/atoms/user.ts"
+      ],
+      "affects": ["auth", "me", "susi", "payments"]
+    },
+    "ui": {
+      "warning": "수정 시 전체 UI에 영향",
+      "directory": "src/components/ui/",
+      "affectsAll": true
+    },
+    "custom": {
+      "warning": "수정 시 사용하는 컴포넌트에 영향",
+      "files": [
+        "src/components/custom/button.tsx",
+        "src/components/custom/chart.tsx",
+        "src/components/custom/data-grid.tsx",
+        "src/components/custom/responsive-dialog.tsx",
+        "src/components/custom/risk-badge.tsx",
+        "src/components/custom/searchable-dropdown.tsx"
+      ],
+      "affects": ["susi", "explore"]
+    },
+    "utils": {
+      "warning": "수정 시 유틸리티 사용처에 영향",
+      "files": [
+        "src/lib/utils.ts",
+        "src/lib/utils/common/date.ts",
+        "src/lib/utils/common/format.ts",
+        "src/lib/utils/firebase/firebase.ts"
+      ],
+      "affectsAll": true
+    },
+    "gcp": {
+      "warning": "수정 시 GCP 연동에 영향",
+      "files": [
+        "src/lib/gcp/index.ts",
+        "src/lib/gcp/monitoring.ts"
+      ],
+      "affects": ["auth", "spring"]
+    },
+    "constants": {
+      "warning": "수정 시 상수 사용처에 영향",
+      "files": [
+        "src/lib/constants/index.ts",
+        "src/lib/constants/service-colors.ts"
+      ],
+      "affectsAll": true
+    }
+  },
+  "categories": {
+    "admission": {
+      "name": "입시분석",
+      "features": ["susi", "explore", "grade-analysis"]
+    },
+    "evaluation": {
+      "name": "평가",
+      "features": ["officer", "evaluation"]
+    },
+    "payment": {
+      "name": "결제",
+      "features": ["products", "payments"]
+    },
+    "system": {
+      "name": "시스템",
+      "features": ["auth", "boards", "me", "static-data", "spring"]
+    }
+  },
+  "changeLog": [
+    {
+      "date": "2025-12-17",
+      "type": "init",
+      "description": "feature-map.json 초기 생성",
+      "author": ""
+    },
+    {
+      "date": "2026-03-24",
+      "type": "cleanup",
+      "description": "독립 앱으로 이관 완료된 기능 제거: 정시(Jungsi), 모의고사(Mogo), 플래너(StudyPlanner), 멘토링(StudyArena), 조합, 모의지원, 멤버십",
+      "author": ""
+    }
+  ]
+}

@@ -22,7 +22,7 @@ function SchoolRecord() {
           안내에 따라 PDF혹은 HTML로 생기부를 등록하세요. T Skool 시스템을 통해
           대학별 환산식에 따라 내 성적을 계산해서 한눈에 표시할 수 있어요.
           생기부 등록 후 사정관 평가를 진행한 뒤{" "}
-          <Link className="text-blue-500" to="/ms/comprehensive">
+          <Link className="text-blue-500" to="/sb/comprehensive">
             학종
           </Link>{" "}
           탭에서 내 평가점수에 맞는 대학들을 탐색해보세요!

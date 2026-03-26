@@ -11,7 +11,7 @@ export const Route = createLazyFileRoute("/explore/susi-kyokwa")({
 
 function ExploreSusiKyokwaRedirect() {
   // /ms/kyokwa로 리다이렉트
-  return <Navigate to="/ms/kyokwa" />;
+  return <Navigate to="/sb/kyokwa" />;
 }
 
 /* 예전 코드 - 주석처리됨

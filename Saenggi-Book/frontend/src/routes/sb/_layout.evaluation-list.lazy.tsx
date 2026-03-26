@@ -1,3 +1,4 @@
+import { Button } from "@/components/custom/button";
 import { AiEvaluationDetail } from "@/components/reports/ai-evaluation-detail";
 import { RequireLoginMessage } from "@/components/require-login-message";
 import { Card } from "@/components/ui/card";
@@ -7,36 +8,14 @@ import { formatDateYYYYMMDD } from "@/lib/utils/common/date";
 import { useGetCurrentUser } from "@/stores/server/features/me/queries";
 import { useGetAiEvaluationHistory } from "@/stores/server/features/ai-evaluation/queries";
 import type { IAiEvaluation } from "@/stores/server/features/ai-evaluation/interfaces";
-import { IconSparkles, IconAlertTriangle } from "@tabler/icons-react";
+import { IconSparkles } from "@tabler/icons-react";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export const Route = createLazyFileRoute(
-  "/grade-analysis/_layout/evaluation-list",
-)({
+export const Route = createLazyFileRoute("/sb/_layout/evaluation-list")({
   component: AiEvaluationList,
 });
-
-/** 평가 내역에서 고유 학기 수를 계산 (4학기 = 2년 이상 필요) */
-function countUniqueSemesters(evaluationList: IAiEvaluation[]): number {
-  const semesterSet = new Set<string>();
-
-  for (const evaluation of evaluationList) {
-    if (evaluation.evalType === "comprehensive") {
-      // 종합 평가: 해당 학년의 1학기, 2학기를 모두 커버
-      semesterSet.add(`${evaluation.grade}-1`);
-      semesterSet.add(`${evaluation.grade}-2`);
-    } else if (evaluation.evalType === "semester" && evaluation.semester) {
-      // 학기별 평가: 해당 학기만 커버
-      semesterSet.add(`${evaluation.grade}-${evaluation.semester}`);
-    }
-  }
-
-  return semesterSet.size;
-}
-
-const REQUIRED_SEMESTERS = 4; // 4학기 (2년)
 
 function AiEvaluationList() {
   const { data: currentUser } = useGetCurrentUser();
@@ -44,20 +23,12 @@ function AiEvaluationList() {
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // 고유 학기 수 계산
-  const uniqueSemesterCount = useMemo(() => {
-    if (!evaluationList?.length) return 0;
-    return countUniqueSemesters(evaluationList);
-  }, [evaluationList]);
-
-  const hasEnoughSemesters = uniqueSemesterCount >= REQUIRED_SEMESTERS;
-
-  // 데이터 로드 시 최신 평가를 자동 선택 (4학기 이상일 때만)
+  // 데이터 로드 시 최신 평가를 자동 선택
   useEffect(() => {
-    if (evaluationList?.length && selectedId === null && hasEnoughSemesters) {
+    if (evaluationList?.length && selectedId === null) {
       setSelectedId(evaluationList[0].id);
     }
-  }, [evaluationList, selectedId, hasEnoughSemesters]);
+  }, [evaluationList, selectedId]);
 
   const selectedItem = useMemo(() => {
     return evaluationList?.find((n) => n.id === selectedId) ?? null;
@@ -72,7 +43,7 @@ function AiEvaluationList() {
         </p>
         <p className="text-sm text-muted-foreground">
           평가 결과를 참고하여{" "}
-          <Link className="text-blue-500" to="/grade-analysis/comprehensive">
+          <Link className="text-blue-500" to="/sb/comprehensive">
             학종
           </Link>{" "}
           탭에서 나에게 맞는 대학을 탐색해보세요!
@@ -97,34 +68,6 @@ function AiEvaluationList() {
               생기부를 업로드하고 AI 평가를 받아보세요!
             </p>
           </div>
-        </Card>
-      ) : !hasEnoughSemesters ? (
-        /* 4학기 미만: 서비스 불가 안내 */
-        <Card className="flex flex-col items-center gap-5 border-amber-200 bg-amber-50 p-10 text-center dark:border-amber-800 dark:bg-amber-950">
-          <IconAlertTriangle className="size-14 text-amber-500" />
-          <div className="space-y-2">
-            <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
-              서비스 불가
-            </p>
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              수시 서비스를 이용하기 위해서는{" "}
-              <strong>4학기 이상(2년)</strong>의 생기부 평가가 필요합니다.
-            </p>
-            <p className="text-sm text-amber-600 dark:text-amber-400">
-              현재 <strong>{uniqueSemesterCount}학기</strong>의 평가만 완료되었습니다.
-              <br />
-              나머지 학기의 생기부를 평가한 후 이용해주세요.
-            </p>
-          </div>
-          <Link
-            to="/sb/evaluation"
-            className={cn(
-              "mt-2 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-700",
-            )}
-          >
-            <IconSparkles className="size-4" />
-            생기부 평가하러 가기
-          </Link>
         </Card>
       ) : (
         <div className="space-y-6">

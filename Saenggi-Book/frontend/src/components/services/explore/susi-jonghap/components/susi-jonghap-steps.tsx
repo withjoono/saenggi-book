@@ -55,7 +55,7 @@ export const SusiJonghapSteps = () => {
   return (
     <div className="w-full pb-8">
       <Link
-        to="/ms/subject"
+        to="/sb/subject"
         className="flex items-center justify-center pb-2 text-blue-500"
       >
         <p className="text-center text-sm">교과 전형을 찾으시나요?</p>

@@ -16,7 +16,7 @@ export const EvaluationGrade = () => {
         <p className="text-foreground/60">
           내 생기부를 통해 계산한 내신 등급입니다. 환산컷은 대학별로 계산식이
           다르기 때문에{" "}
-          <Link to="/ms/comprehensive" className="text-blue-500">
+          <Link to="/sb/comprehensive" className="text-blue-500">
             학종 분석 및 대학 찾기 서비스
           </Link>
           에서 확인할 수 있습니다!

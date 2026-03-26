@@ -44,7 +44,7 @@ function EvaluationList() {
         </p>
         <p className="text-sm text-muted-foreground">
           완료된 평가를 가지고{" "}
-          <Link className="text-blue-500" to="/ms/comprehensive">
+          <Link className="text-blue-500" to="/sb/comprehensive">
             학종
           </Link>{" "}
           탭에서 나에게 맞는 대학을 탐색해보세요!
