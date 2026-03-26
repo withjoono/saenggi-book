@@ -40,10 +40,15 @@ function MsCompatibility() {
     UNIVERSITY_COMPATIBILITY_LEVELS[0],
   );
 
-  // 대학 검색
   const [univSearchQuery, setUnivSearchQuery] = useState("");
   const [selectedUnivItem, setSelectedUnivItem] = useState<IUnivLevel | null>(null);
   const [isUnivDropdownOpen, setIsUnivDropdownOpen] = useState(false);
+  const [isDiagnosisStarted, setIsDiagnosisStarted] = useState(false);
+
+  // 계열이나 대학 정보가 바뀌면 진단 화면을 숨김
+  useEffect(() => {
+    setIsDiagnosisStarted(false);
+  }, [selectedSeries, selectedUnivItem]);
 
   // 대학 검색 결과 필터링
   const filteredUniversities = useMemo(() => {
@@ -128,22 +133,12 @@ function MsCompatibility() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setUnivSearchQuery(val);
-                      
+                      setSelectedUnivItem(null); // 입력값이 변경되면 선택된 대학 초기화 (리스트에서 클릭 필수)
+
                       if (val.trim()) {
                         setIsUnivDropdownOpen(true);
-                        // 정확히 일치하는 대학이 있는지 확인
-                        const exactMatch = universities.find(
-                          (u) => u.univName === val.trim()
-                        );
-                        if (exactMatch) {
-                          setSelectedUnivItem(exactMatch);
-                          setIsUnivDropdownOpen(false);
-                        } else {
-                          setSelectedUnivItem(null);
-                        }
                       } else {
                         setIsUnivDropdownOpen(false);
-                        setSelectedUnivItem(null);
                       }
                     }}
                     onFocus={() => {
@@ -176,12 +171,27 @@ function MsCompatibility() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
               {/* removed manual rank selection UI and univ label */}
               
-              <MyCompatibility
-                selectedSeries={selectedSeries}
-                selectedUniv={selectedUniv}
-              />
+              <div className="flex justify-center pt-4">
+                <Button
+                  size="lg"
+                  className="w-full max-w-sm font-semibold"
+                  disabled={!selectedUnivItem}
+                  onClick={() => setIsDiagnosisStarted(true)}
+                >
+                  계열 적합성 진단 시작
+                </Button>
+              </div>
+
+              {isDiagnosisStarted && (
+                <MyCompatibility
+                  selectedSeries={selectedSeries}
+                  selectedUniv={selectedUniv}
+                />
+              )}
             </div>
           ) : null}
         </div>
