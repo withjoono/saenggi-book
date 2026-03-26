@@ -176,43 +176,8 @@ function MsCompatibility() {
                       ))}
                     </div>
                   )}
-                </div>
-                {selectedUnivItem && (
-                  <p className="text-center text-sm text-primary font-medium">
-                    ✅ {selectedUnivItem.univName} (Lv{selectedUnivItem.univLevel} · {selectedUnivItem.region})
-                  </p>
-                )}
-              </div>
-
-              {/* 대학 레벨 선택 */}
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-muted-foreground">
-                  또는 대학 레벨 선택
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {UNIVERSITY_COMPATIBILITY_LEVELS.map((n, idx) => {
-                    return (
-                      <Button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setSelectedUniv(n);
-                          setSelectedUnivItem(null);
-                          setUnivSearchQuery("");
-                        }}
-                        variant={
-                          n.level === selectedUniv.level && !selectedUnivItem
-                            ? "default"
-                            : "outline"
-                        }
-                      >
-                        Lv{n.level} - {n.text}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-
+              {/* removed manual rank selection UI and univ label */}
+              
               <MyCompatibility
                 selectedSeries={selectedSeries}
                 selectedUniv={selectedUniv}
