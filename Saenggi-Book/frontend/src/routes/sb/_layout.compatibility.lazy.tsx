@@ -126,8 +126,25 @@ function MsCompatibility() {
                     placeholder="대학명을 입력하세요 (예: 서울대, 연세대...)"
                     value={univSearchQuery}
                     onChange={(e) => {
-                      setUnivSearchQuery(e.target.value);
-                      setIsUnivDropdownOpen(true);
+                      const val = e.target.value;
+                      setUnivSearchQuery(val);
+                      
+                      if (val.trim()) {
+                        setIsUnivDropdownOpen(true);
+                        // 정확히 일치하는 대학이 있는지 확인
+                        const exactMatch = universities.find(
+                          (u) => u.univName === val.trim()
+                        );
+                        if (exactMatch) {
+                          setSelectedUnivItem(exactMatch);
+                          setIsUnivDropdownOpen(false);
+                        } else {
+                          setSelectedUnivItem(null);
+                        }
+                      } else {
+                        setIsUnivDropdownOpen(false);
+                        setSelectedUnivItem(null);
+                      }
                     }}
                     onFocus={() => {
                       if (univSearchQuery.trim()) setIsUnivDropdownOpen(true);
