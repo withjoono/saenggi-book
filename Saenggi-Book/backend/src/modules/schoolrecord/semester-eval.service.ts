@@ -96,6 +96,31 @@ export interface ComprehensiveEvalRequestDto {
     behaviorTexts: Array<{ text: string }>;
 }
 
+export interface BuildAnalyzeRequestDto {
+    targetUniv?: string;
+    targetMajor?: string;
+    targetSeries?: string;
+    weaknesses?: string[]; // 교과 전략에서 파악된 약점
+    subjectTexts: Array<{ semester: string; subjectName: string; text: string }>;
+    creativeTexts: Array<{ activityType: string; text: string }>;
+    behaviorTexts: Array<{ text: string }>;
+}
+
+export interface RecommendedActivity {
+    title: string;
+    category: CompetencyCategory;
+    subjectName: string; // 연계할 교과목 또는 창체 영역
+    reason: string;
+    actionPlan: string;
+    expectedImpact: string;
+}
+
+export interface BuildAnalyzeResult {
+    overallStrategy: string;
+    recommendedActivities: RecommendedActivity[];
+    analysisDate: string;
+}
+
 // ==================== Service ====================
 
 @Injectable()
@@ -456,6 +481,111 @@ ${inputData}
                 questionId: q.questionId ?? q.question_id,
                 score: Math.max(1, Math.min(7, q.score || 1)),
                 reason: q.reason || '',
+            })),
+            analysisDate: new Date().toISOString(),
+        };
+    }
+
+    // ── 3-1학기 생기부 빌드 전략 (활동 추천) ──
+
+    private buildAnalyzePrompt(dto: BuildAnalyzeRequestDto): string {
+        let inputData = '';
+        let idx = 0;
+
+        if (dto.subjectTexts.length > 0) {
+            inputData += '=== 기존 세부능력 및 특기사항 (세특) ===\n';
+            for (const s of dto.subjectTexts) {
+                inputData += `[${s.semester}학기] ${s.subjectName}\n${s.text}\n\n`;
+            }
+        }
+
+        if (dto.creativeTexts.length > 0) {
+            inputData += '=== 기존 창의적 체험활동 (창체) ===\n';
+            for (const c of dto.creativeTexts) {
+                inputData += `[${c.activityType}]\n${c.text}\n\n`;
+            }
+        }
+
+        const targetContext = [
+            dto.targetUniv ? `목표 대학: ${dto.targetUniv}` : null,
+            dto.targetMajor ? `목표 전공: ${dto.targetMajor}` : null,
+            dto.targetSeries ? `목표 계열: ${dto.targetSeries}` : null,
+        ].filter(Boolean).join(' / ');
+
+        const weaknessContext = (dto.weaknesses && dto.weaknesses.length > 0)
+            ? `\n## 보완점\n현재 학생의 약점: ${dto.weaknesses.join(', ')}\n이 약점을 3학년 1학기 활동으로 어떻게 보완할 수 있을지도 고려해주세요.`
+            : '';
+
+        return `당신은 최상위권 학생들을 컨설팅하는 최고의 입시/생기부 전문가입니다.
+학생의 1~2학년 생기부 기록을 분석하여, 대학 수시(학생부종합전형) 지원을 위해 가장 중요한 학기인 "3학년 1학기"에 수행해야 할 최적의 비교과/세특 활동 전략을 추천해주세요.
+
+## 학생의 목표
+${targetContext || '아직 구체적인 목표가 설정되지 않았으나, 전공 적합성과 학업 역량을 돋보이게 해야 합니다.'}${weaknessContext}
+
+## 기존 생기부 데이터 (1~2학년)
+${inputData}
+
+## 평가 및 추천 지침
+1. 기존 생기부에서 드러난 강점(심화 탐구 소재, 우수 역량)을 자연스럽게 3학년 활동으로 심화·연계할 수 있는 "후속 활동"을 추천해주세요. (예: 2학년 때 A를 탐구했다면, 3학년 때는 A를 실생활에 적용하거나 B와 융합하는 활동)
+2. 목표 전공/계열에 꼭 필요한데 기존 생기부에 부족한 역량이 있다면 이를 채울 수 있는 활동을 추천해주세요.
+3. 3학년 1학기는 시간이 부족하므로, 실제 수행 가능하고 임팩트 있는 활동(심화 보고서, 독서 기반 탐구, 교과 연계 프로젝트 등) 위주로 추천해주세요.
+
+## 출력 형식 (반드시 JSON으로만 응답)
+{
+  "overallStrategy": "3학년 1학기 생기부 마무리를 위한 3~4문장의 핵심 전략 요약",
+  "recommendedActivities": [
+    {
+      "title": "활동의 구체적인 주제 (예: 파이썬을 활용한 전염병 확산 SIR 모델 시뮬레이션 및 예방 정책 제안)",
+      "category": "academic|career|community|other",
+      "subjectName": "추천 연계 교과목 (예: 확률과 통계, 생명과학II, 진로활동 등)",
+      "reason": "왜 이 활동을 추천하는지 (기존 활동과의 연계성 또는 부족점 보완 측면에서 2~3문장)",
+      "actionPlan": "이 활동을 수행하기 위한 구체적인 3단계 실행 계획",
+      "expectedImpact": "이 활동이 생기부에 기재되었을 때 입학사정관에게 줄 수 있는 긍정적 평가 요소 요약"
+    }
+  ]
+}
+
+## 주의사항
+1. 반드시 5~7개의 구체적이고 수준 높은 활동을 추천해주세요. (교과 세특 연계 중심, 창체 포함)
+2. 추천 활동은 너무 뻔하거나 일반적인 내용(예: "진로 관련 독서하기")을 피하고, 3학년 수준에 맞는 깊이 있는 탐구 주제를 구체적으로 제시해주세요.`;
+    }
+
+    async analyzeBuildStrategy(dto: BuildAnalyzeRequestDto): Promise<BuildAnalyzeResult> {
+        if (!this.geminiModel) {
+            throw new Error('Gemini API key not configured');
+        }
+
+        const totalTexts = dto.subjectTexts.length + dto.creativeTexts.length + dto.behaviorTexts.length;
+        if (totalTexts === 0) {
+            throw new Error('분석할 데이터가 없습니다.');
+        }
+
+        this.logger.log(`[BuildAnalyze] 3-1학기 빌드 전략 분석 시작 (세특:${dto.subjectTexts.length}, 창체:${dto.creativeTexts.length})`);
+
+        const prompt = this.buildAnalyzePrompt(dto);
+
+        const response = await this.geminiModel.generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.5, // 창의성을 위해 조금 더 활성화
+            },
+        });
+
+        const content = response.response.text();
+        if (!content) throw new Error('AI 응답이 비어있습니다.');
+
+        const parsed = JSON.parse(content);
+
+        return {
+            overallStrategy: parsed.overallStrategy || '',
+            recommendedActivities: (parsed.recommendedActivities || []).map((a: any) => ({
+                title: a.title,
+                category: a.category as CompetencyCategory,
+                subjectName: a.subjectName,
+                reason: a.reason,
+                actionPlan: a.actionPlan,
+                expectedImpact: a.expectedImpact,
             })),
             analysisDate: new Date().toISOString(),
         };

@@ -1,20 +1,23 @@
 import { Button } from "@/components/custom/button";
 import { RequireLoginMessage } from "@/components/require-login-message";
-import { RequireSchoolRecordMessage } from "@/components/require-schoolrecord-message";
 import { RowSeriesSearch } from "@/components/row-series-search";
-import { MyCompatibility } from "@/components/services/evaluation/my-compatibility";
+import { SubjectRoadmap } from "@/components/services/evaluation/subject-roadmap";
 import { SeriesSelector } from "@/components/services/evaluation/series-selector";
 import { Separator } from "@/components/ui/separator";
 import { ICompatibilityData } from "@/constants/compatibility-series";
 import { UNIVERSITY_COMPATIBILITY_LEVELS } from "@/constants/compatibility-univ";
-import {
-  useGetCurrentUser,
-  useGetSchoolRecords,
-} from "@/stores/server/features/me/queries";
+import { useGetCurrentUser } from "@/stores/server/features/me/queries";
 import { useGetUniversities } from "@/stores/server/features/univ-level/queries";
 import { IUnivLevel } from "@/stores/server/features/univ-level/apis";
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+
+/**
+ * 2022 개정과정(현 고2 이하) vs 2015 개정과정(현 고3 이상) 기준 졸업년도
+ * graduateYear >= 2026 → 고2 이하 (2022 개정과정) → 생기북에서 계열적합성진단
+ * graduateYear <= 2025 → 고3 이상 (2015 개정과정) → 수시에서 계열적합성진단
+ */
+const CURRICULUM_2022_MIN_GRADUATE_YEAR = 2026;
 
 export const Route = createLazyFileRoute("/sb/_layout/compatibility")({
   component: MsCompatibility,
@@ -23,7 +26,6 @@ export const Route = createLazyFileRoute("/sb/_layout/compatibility")({
 function MsCompatibility() {
   // Queries
   const { data: currentUser } = useGetCurrentUser();
-  const { data: schoolRecords } = useGetSchoolRecords();
   const { data: universities = [] } = useGetUniversities();
 
   const [selectedSeries, setSelectedSeries] = useState({
@@ -86,24 +88,46 @@ function MsCompatibility() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">계열 적합성 진단</h3>
+        <h3 className="text-lg font-medium">전공별 과목 로드맵</h3>
         <p className="text-sm text-muted-foreground">
-          내 생기부의 데이터를 분석하여 계열별 적합도를 진단하는 서비스입니다.
+          원하는 대학과 전공에 진학하기 위해 필요한 과목 이수 로드맵과 내신 관리 목표를 가이드해드립니다.
         </p>
       </div>
       <Separator />
       {!currentUser ? (
         <RequireLoginMessage />
-      ) : !schoolRecords || schoolRecords.isEmpty ? (
-        <RequireSchoolRecordMessage />
+      ) : Number(currentUser.graduateYear) < CURRICULUM_2022_MIN_GRADUATE_YEAR ? (
+        /* 고3 이상 (2015 개정과정) → 수시 계열적합성진단으로 안내 */
+        <div className="flex flex-col items-center gap-6 py-16">
+          <div className="rounded-full bg-amber-100 p-4 text-4xl">📋</div>
+          <div className="space-y-2 text-center">
+            <p className="text-lg font-semibold">
+              고3 이상 학생은 수시 계열적합성진단을 이용해주세요
+            </p>
+            <p className="text-sm text-muted-foreground">
+              2015 개정과정 교과 기반의 계열적합성진단은
+              <br />
+              수시 앱에서 제공됩니다.
+            </p>
+          </div>
+          <Link
+            to="/evaluation/compatibility"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          >
+            수시 계열적합성진단 바로가기 →
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            생기북의 다른 기능은 이 앱에서 계속 이용할 수 있습니다.
+          </p>
+        </div>
       ) : (
         <div className="">
           <div className="space-y-2 py-4 pt-12">
             <p className="text-center text-lg font-semibold">
-              목표 계열을 선택해주세요!
+              목표 전공을 설계해보세요!
             </p>
             <p className="text-center text-sm">
-              내 생기부가 선택한 계열에 적합한지 확인해요.
+              목표 전공에 필요한 추천 이수 과목들을 확인해봐요.
             </p>
           </div>
           <div className="space-y-4 py-12">
@@ -182,12 +206,12 @@ function MsCompatibility() {
                   disabled={!selectedUnivItem}
                   onClick={() => setIsDiagnosisStarted(true)}
                 >
-                  계열 적합성 진단 시작
+                  과목 로드맵 확인
                 </Button>
               </div>
 
               {isDiagnosisStarted && (
-                <MyCompatibility
+                <SubjectRoadmap
                   selectedSeries={selectedSeries}
                   selectedUniv={selectedUniv}
                 />

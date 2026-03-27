@@ -8,7 +8,7 @@
 import { Controller, Post, Get, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentMemberId } from 'src/auth/decorators/current-member_id.decorator';
-import { SemesterEvalService, SemesterEvalRequestDto, ComprehensiveEvalRequestDto } from './semester-eval.service';
+import { SemesterEvalService, SemesterEvalRequestDto, ComprehensiveEvalRequestDto, BuildAnalyzeRequestDto } from './semester-eval.service';
 
 @ApiTags('schoolrecord')
 @ApiBearerAuth('access-token')
@@ -45,6 +45,17 @@ export class SemesterEvalController {
             console.error('[ComprehensiveEval] DB 저장 실패:', err.message);
         });
 
+        return { success: true, data: result };
+    }
+
+    @Post('build/analyze')
+    @ApiOperation({ summary: '3-1학기 생기부 빌드 전략 추천 (AI)' })
+    async analyzeBuildStrategy(
+        @Body() dto: BuildAnalyzeRequestDto,
+        @CurrentMemberId() memberId: string,
+    ) {
+        // AI로 기존 1~2학년 데이터를 분석해서 3-1학기 활동 전략을 도출합니다.
+        const result = await this.semesterEvalService.analyzeBuildStrategy(dto);
         return { success: true, data: result };
     }
 
