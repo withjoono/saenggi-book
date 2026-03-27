@@ -5,7 +5,7 @@ import { SubjectRoadmap } from "@/components/services/evaluation/subject-roadmap
 import { SeriesSelector } from "@/components/services/evaluation/series-selector";
 import { Separator } from "@/components/ui/separator";
 import { ICompatibilityData } from "@/constants/compatibility-series";
-import { UNIVERSITY_COMPATIBILITY_LEVELS } from "@/constants/compatibility-univ";
+import { UNIVERSITY_COMPATIBILITY_LEVELS_2022 } from "@/constants/compatibility-univ";
 import { useGetCurrentUser } from "@/stores/server/features/me/queries";
 import { useGetUniversities } from "@/stores/server/features/univ-level/queries";
 import { IUnivLevel } from "@/stores/server/features/univ-level/apis";
@@ -39,7 +39,7 @@ function MsCompatibility() {
   );
 
   const [selectedUniv, setSelectedUniv] = useState(
-    UNIVERSITY_COMPATIBILITY_LEVELS[0],
+    UNIVERSITY_COMPATIBILITY_LEVELS_2022[0],
   );
 
   const [univSearchQuery, setUnivSearchQuery] = useState("");
@@ -66,7 +66,7 @@ function MsCompatibility() {
   // 대학 선택 시 해당 레벨로 자동 매핑
   useEffect(() => {
     if (selectedUnivItem) {
-      const matchedLevel = UNIVERSITY_COMPATIBILITY_LEVELS.find(
+      const matchedLevel = UNIVERSITY_COMPATIBILITY_LEVELS_2022.find(
         (l) => l.level === selectedUnivItem.univLevel,
       );
       if (matchedLevel) {
