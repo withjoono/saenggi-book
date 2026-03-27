@@ -32,8 +32,10 @@ COPY package.json yarn.lock ./
 # Install only production dependencies
 RUN yarn install --frozen-lockfile --production && yarn cache clean
 
-# Copy built application from builder stage
+# Copy built application and prisma client from builder stage
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
