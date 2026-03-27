@@ -19,7 +19,7 @@ export class SusiFormulaDataService implements OnModuleInit {
   private dataLoaded = false;
   private loadingPromise: Promise<void> | null = null;
 
-  constructor(  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit(): Promise<void> {
     // 모듈 초기화 시 데이터 프리로드
@@ -54,9 +54,9 @@ export class SusiFormulaDataService implements OnModuleInit {
    */
   private async loadAllFormulas(): Promise<void> {
     try {
-      const formulas = await this.formulaRepository.find({
+      const formulas = await this.prisma.susi_calculation_formula.findMany({
         where: { is_active: true },
-        order: { university_name: 'ASC' },
+        orderBy: { university_name: 'asc' },
       });
 
       this.formulaCache.clear();
@@ -84,7 +84,7 @@ export class SusiFormulaDataService implements OnModuleInit {
   /**
    * Entity → CalculationFormula 변환
    */
-  private entityToFormula(entity: SusiCalculationFormulaEntity): CalculationFormula {
+  private entityToFormula(entity: any): CalculationFormula {
     return {
       id: entity.id,
       year: entity.year,
@@ -189,23 +189,27 @@ export class SusiFormulaDataService implements OnModuleInit {
   /**
    * 환산 공식 저장 또는 업데이트
    */
-  async saveFormula(formula: Partial<SusiCalculationFormulaEntity>): Promise<SusiCalculationFormulaEntity> {
-    const existingFormula = await this.formulaRepository.findOne({
+  async saveFormula(formula: any): Promise<any> {
+    const existingFormula = await this.prisma.susi_calculation_formula.findFirst({
       where: {
         university_name: formula.university_name,
         year: formula.year,
       },
     });
 
-    let savedEntity: SusiCalculationFormulaEntity;
+    let savedEntity: any;
 
     if (existingFormula) {
       // 업데이트
-      await this.formulaRepository.update(existingFormula.id, formula);
-      savedEntity = await this.formulaRepository.findOne({ where: { id: existingFormula.id } });
+      savedEntity = await this.prisma.susi_calculation_formula.update({
+        where: { id: existingFormula.id },
+        data: formula,
+      });
     } else {
       // 신규 저장
-      savedEntity = await this.formulaRepository.save(this.formulaRepository.create(formula));
+      savedEntity = await this.prisma.susi_calculation_formula.create({
+        data: formula as any,
+      });
     }
 
     // 캐시 업데이트
@@ -219,9 +223,9 @@ export class SusiFormulaDataService implements OnModuleInit {
    * 여러 환산 공식 일괄 저장
    */
   async saveFormulas(
-    formulas: Partial<SusiCalculationFormulaEntity>[],
-  ): Promise<SusiCalculationFormulaEntity[]> {
-    const savedEntities: SusiCalculationFormulaEntity[] = [];
+    formulas: any[],
+  ): Promise<any[]> {
+    const savedEntities: any[] = [];
 
     for (const formula of formulas) {
       const saved = await this.saveFormula(formula);

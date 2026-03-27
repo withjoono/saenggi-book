@@ -1,0 +1,50 @@
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/core/regular-admission, POST} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/core/regular-admission/:id, PATCH} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/core/regular-admission/:id, DELETE} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/core/regular-admission/upload, POST} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mStaticDataController {/static-data}:[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/static-data, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/static-data/test-status, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/static-data/refresh, POST} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mExploreSusiController {/explore/ms}:[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/step-1, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/step-2, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/step-3, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/step-4, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/step-5, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/kyokwa/detail/:recruitmentUnitId, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/jonghap/step-1, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/jonghap/step-2, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/jonghap/step-3, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/jonghap/step-4, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/ms/jonghap/detail/:recruitmentUnitId, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mExploreSearchController {/explore/search}:[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/university, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/admission, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/recruitment-unit, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/universities, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/university/:id/admissions, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/admission/:id/recruitment-units, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/search/recruitment-units, GET} route[39m[38;5;3m +8ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mExploreRegularController {/explore/regular}:[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/regular, GET} route[39m[38;5;3m +1ms[39m
+2026-03-27 07:58:30 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:30 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/explore/regular/:id, GET} route[39m[38;5;3m +0ms[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  [31m[Nest] 16  - [39m03/27/2026, 7:58:31 AM [31m  ERROR[39m [38;5;3m[SusiFormulaDataService] [39m[31m?? ?? ?? ??:[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  [31m[Nest] 16  - [39m03/27/2026, 7:58:31 AM [31m  ERROR[39m [38;5;3m[SusiFormulaDataService] [39m[31mPrismaClientKnownRequestError:
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Invalid `prisma.susi_calculation_formula.findMany()` invocation:
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  The table `susi.susi_calculation_formula` does not exist in the current database.[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  [33m[Nest] 16  - [39m03/27/2026, 7:58:31 AM [33m   WARN[39m [38;5;3m[SusiFormulaDataService] [39m[33m?? ?? ?? ??? ?? ?? (???? ?? ? ??):[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  [33m[Nest] 16  - [39m03/27/2026, 7:58:31 AM [33m   WARN[39m [38;5;3m[SusiFormulaDataService] [39m[33m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Invalid `prisma.susi_calculation_formula.findMany()` invocation:
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  The table `susi.susi_calculation_formula` does not exist in the current database.[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  [32m[Nest] 16  - [39m03/27/2026, 7:58:31 AM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +10ms[39m
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Application is running on: http://localhost:8081
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Swagger documentation: http://localhost:8081/swagger
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Environment: production
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  Sentry DSN configured: true
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  ?? [OAuth] Redis ?? ??, ??? ???? ??: connect ECONNREFUSED 127.0.0.1:6379
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  ?? [OAuth] Redis ?? ?? ??, ??? ??? ??
+2026-03-27 07:58:31 saenggiview-backend[20260327t165153]  "GET /schoolrecord/eval/history HTTP/1.1" 500
+2026-03-27 07:58:32 saenggiview-backend[20260327t165153]  ?? [OAuth] Redis ?? ?? (3? ?? ??). ??? ??? ??.
+2026-03-27 07:58:37 saenggiview-backend[20260327t165153]  "OPTIONS /schoolrecord/eval/history HTTP/1.1" 204
+2026-03-27 07:58:37 saenggiview-backend[20260327t165153]  "GET /schoolrecord/eval/history HTTP/1.1" 500

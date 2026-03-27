@@ -287,16 +287,6 @@ export const SbHeader = () => {
                       계열 적합성 진단
                     </Link>
                     <Link
-                      to="/sb/target-university"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      목표 대학 설정
-                    </Link>
-                    <Link
                       to="/sb/subject"
                       className={cn(
                         buttonVariants({ variant: "ghost" }),
@@ -591,12 +581,6 @@ export const SbHeader = () => {
                               나에게 맞는 계열을 진단합니다
                             </div>
                           </div>
-                        </Link>
-                        <Link
-                          to="/sb/target-university"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">목표 대학 설정</span>
                         </Link>
                         <Link
                           to="/sb/subject"

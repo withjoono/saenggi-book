@@ -1,0 +1,6 @@
+saenggiview.sv_ai_evaluation exists! Count: [ { count: 1n } ]
+Error for public.sv_ai_evaluation: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42P01`. Message: `relation "public.sv_ai_evaluation" does not exist`

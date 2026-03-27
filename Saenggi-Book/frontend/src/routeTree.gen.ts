@@ -72,9 +72,6 @@ const UsersLayoutProfileLazyRouteImport = createFileRoute(
 const UsersLayoutAdditionalFileLazyRouteImport = createFileRoute(
   '/users/_layout/additional-file',
 )()
-const SbLayoutTargetUniversityLazyRouteImport = createFileRoute(
-  '/sb/_layout/target-university',
-)()
 const SbLayoutSubjectLazyRouteImport = createFileRoute('/sb/_layout/subject')()
 const SbLayoutSetukLazyRouteImport = createFileRoute('/sb/_layout/setuk')()
 const SbLayoutSchoolRecordLazyRouteImport = createFileRoute(
@@ -416,14 +413,6 @@ const UsersLayoutAdditionalFileLazyRoute =
   } as any).lazy(() =>
     import('./routes/users/_layout/additional-file.lazy').then((d) => d.Route),
   )
-const SbLayoutTargetUniversityLazyRoute =
-  SbLayoutTargetUniversityLazyRouteImport.update({
-    id: '/target-university',
-    path: '/target-university',
-    getParentRoute: () => SbLayoutRoute,
-  } as any).lazy(() =>
-    import('./routes/sb/_layout.target-university.lazy').then((d) => d.Route),
-  )
 const SbLayoutSubjectLazyRoute = SbLayoutSubjectLazyRouteImport.update({
   id: '/subject',
   path: '/subject',
@@ -747,7 +736,6 @@ export interface FileRoutesByFullPath {
   '/sb/school-record': typeof SbLayoutSchoolRecordLazyRoute
   '/sb/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/subject': typeof SbLayoutSubjectLazyRoute
-  '/sb/target-university': typeof SbLayoutTargetUniversityLazyRoute
   '/users/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/profile': typeof UsersLayoutProfileLazyRoute
   '/users/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -819,7 +807,6 @@ export interface FileRoutesByTo {
   '/sb/school-record': typeof SbLayoutSchoolRecordLazyRoute
   '/sb/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/subject': typeof SbLayoutSubjectLazyRoute
-  '/sb/target-university': typeof SbLayoutTargetUniversityLazyRoute
   '/users/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/profile': typeof UsersLayoutProfileLazyRoute
   '/users/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -901,7 +888,6 @@ export interface FileRoutesById {
   '/sb/_layout/school-record': typeof SbLayoutSchoolRecordLazyRoute
   '/sb/_layout/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/_layout/subject': typeof SbLayoutSubjectLazyRoute
-  '/sb/_layout/target-university': typeof SbLayoutTargetUniversityLazyRoute
   '/users/_layout/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/_layout/profile': typeof UsersLayoutProfileLazyRoute
   '/users/_layout/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -979,7 +965,6 @@ export interface FileRouteTypes {
     | '/sb/school-record'
     | '/sb/setuk'
     | '/sb/subject'
-    | '/sb/target-university'
     | '/users/additional-file'
     | '/users/profile'
     | '/users/school-record'
@@ -1051,7 +1036,6 @@ export interface FileRouteTypes {
     | '/sb/school-record'
     | '/sb/setuk'
     | '/sb/subject'
-    | '/sb/target-university'
     | '/users/additional-file'
     | '/users/profile'
     | '/users/school-record'
@@ -1132,7 +1116,6 @@ export interface FileRouteTypes {
     | '/sb/_layout/school-record'
     | '/sb/_layout/setuk'
     | '/sb/_layout/subject'
-    | '/sb/_layout/target-university'
     | '/users/_layout/additional-file'
     | '/users/_layout/profile'
     | '/users/_layout/school-record'
@@ -1506,13 +1489,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersLayoutAdditionalFileLazyRouteImport
       parentRoute: typeof UsersLayoutRoute
     }
-    '/sb/_layout/target-university': {
-      id: '/sb/_layout/target-university'
-      path: '/target-university'
-      fullPath: '/sb/target-university'
-      preLoaderRoute: typeof SbLayoutTargetUniversityLazyRouteImport
-      parentRoute: typeof SbLayoutRoute
-    }
     '/sb/_layout/subject': {
       id: '/sb/_layout/subject'
       path: '/subject'
@@ -1795,7 +1771,6 @@ interface SbLayoutRouteChildren {
   SbLayoutSchoolRecordLazyRoute: typeof SbLayoutSchoolRecordLazyRoute
   SbLayoutSetukLazyRoute: typeof SbLayoutSetukLazyRoute
   SbLayoutSubjectLazyRoute: typeof SbLayoutSubjectLazyRoute
-  SbLayoutTargetUniversityLazyRoute: typeof SbLayoutTargetUniversityLazyRoute
 }
 
 const SbLayoutRouteChildren: SbLayoutRouteChildren = {
@@ -1813,7 +1788,6 @@ const SbLayoutRouteChildren: SbLayoutRouteChildren = {
   SbLayoutSchoolRecordLazyRoute: SbLayoutSchoolRecordLazyRoute,
   SbLayoutSetukLazyRoute: SbLayoutSetukLazyRoute,
   SbLayoutSubjectLazyRoute: SbLayoutSubjectLazyRoute,
-  SbLayoutTargetUniversityLazyRoute: SbLayoutTargetUniversityLazyRoute,
 }
 
 const SbLayoutRouteWithChildren = SbLayoutRoute._addFileChildren(

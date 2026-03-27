@@ -29,7 +29,7 @@ export class SemesterEvalController {
             console.error('[SemesterEval] DB 저장 실패:', err.message);
         });
 
-        return { success: true, data: result };
+        return result;
     }
 
     @Post('eval/comprehensive')
@@ -45,7 +45,7 @@ export class SemesterEvalController {
             console.error('[ComprehensiveEval] DB 저장 실패:', err.message);
         });
 
-        return { success: true, data: result };
+        return result;
     }
 
     @Post('build/analyze')
@@ -56,13 +56,12 @@ export class SemesterEvalController {
     ) {
         // AI로 기존 1~2학년 데이터를 분석해서 3-1학기 활동 전략을 도출합니다.
         const result = await this.semesterEvalService.analyzeBuildStrategy(dto);
-        return { success: true, data: result };
+        return result;
     }
 
     @Get('eval/history')
     @ApiOperation({ summary: '내 AI 평가 내역 조회' })
     async getEvalHistory(@CurrentMemberId() memberId: string) {
-        const history = await this.semesterEvalService.getEvalHistory(memberId);
-        return { success: true, data: history };
+        return await this.semesterEvalService.getEvalHistory(memberId);
     }
 }

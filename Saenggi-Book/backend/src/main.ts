@@ -15,6 +15,11 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
+  // 전역 BigInt 시리얼라이저: Prisma BigInt 타입 반환 시 JSON.stringify 충돌(500 에러) 방지
+  (BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+  };
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: [

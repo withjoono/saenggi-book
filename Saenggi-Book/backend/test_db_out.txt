@@ -1,0 +1,16 @@
+Prisma Error:
+PrismaClientInitializationError: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+    at $n.handleRequestError (E:\Dev\github\Saenggi-Book\backend\node_modules\@prisma\client\runtime\library.js:121:7615)
+    at $n.handleAndLogRequestError (E:\Dev\github\Saenggi-Book\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (E:\Dev\github\Saenggi-Book\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (E:\Dev\github\Saenggi-Book\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async main (E:\Dev\github\Saenggi-Book\backend\test_db.ts:9:20) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
