@@ -14,6 +14,8 @@
 !tsconfig.build.json
 !nest-cli.json
 !instrumentation.ts
+!Dockerfile
+!.dockerignore
 
 # Include Prisma schema (for prisma generate)
 !prisma/
