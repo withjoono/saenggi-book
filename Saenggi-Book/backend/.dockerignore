@@ -11,6 +11,10 @@
 !nest-cli.json
 !instrumentation.ts
 
+# Include Prisma
+!prisma/
+!prisma/**
+
 # Re-exclude test files
 src/**/*.spec.ts
 src/**/*.test.ts
