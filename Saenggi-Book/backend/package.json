@@ -30,7 +30,7 @@
     "gcloud:config": "gcloud config set project ts-back-nest-479305",
     "gcloud:deploy": "gcloud app deploy",
     "cloudrun:deploy": "gcloud run deploy susi-backend --source . --region asia-northeast3 --platform managed --allow-unauthenticated --memory 1Gi --cpu 1 --min-instances 0 --max-instances 10 --port 8080",
-    "cloudrun:deploy:env": "gcloud run deploy susi-backend --source . --region asia-northeast3 --platform managed --allow-unauthenticated --memory 1Gi --cpu 1 --min-instances 0 --max-instances 10 --port 8080 --set-env-vars-file .env.cloudrun.yaml",
+    "cloudrun:deploy:env": "gcloud run deploy susi-backend --source . --region asia-northeast3 --platform managed --allow-unauthenticated --memory 1Gi --cpu 1 --min-instances 0 --max-instances 10 --port 8080 --env-vars-file .env.cloudrun.yaml",
     "db:backup": "ts-node scripts/backup-db.ts",
     "db:restore": "ts-node scripts/restore-db.ts",
     "prepare": "husky || true"
