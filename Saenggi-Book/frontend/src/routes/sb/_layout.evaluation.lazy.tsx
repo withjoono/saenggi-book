@@ -15,6 +15,7 @@ import {
     GRADE_LEVEL_LABELS,
     EVAL_COMPETENCY_LABELS,
     EVAL_COMPETENCY_COLORS,
+    GRADE_LETTER_MAPPING,
 } from "@/types/evaluation.type";
 
 export const Route = createLazyFileRoute("/sb/_layout/evaluation")({
@@ -38,246 +39,8 @@ const COMPREHENSIVE_OPTIONS: { key: string; label: string; grade: string }[] = [
     { key: "year-2", label: "2학년 종합", grade: "2" },
     { key: "year-3", label: "3학년 종합", grade: "3" },
 ];
-
-// ==================== 7등급 그래프 (Canvas) ====================
-
-function GradeGraph({ materials, height = 400 }: { materials: EvalMaterialItem[]; height?: number }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas || materials.length === 0) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const dpr = window.devicePixelRatio || 1;
-        const w = canvas.clientWidth;
-        const h = height;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-        ctx.scale(dpr, dpr);
-
-        // 배경
-        ctx.fillStyle = "#0f172a";
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, h, 12);
-        ctx.fill();
-
-        // 노드 배치
-        const centerX = w / 2;
-        const centerY = h / 2;
-        const radius = Math.min(w, h) * 0.35;
-
-        // 중심 노드
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
-        ctx.fillStyle = "#6366f1";
-        ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("세특", centerX, centerY);
-
-        // 카테고리별 그룹
-        const grouped: Record<CompetencyCategory, EvalMaterialItem[]> = {
-            academic: [], career: [], community: [], other: [],
-        };
-        materials.forEach(m => grouped[m.category].push(m));
-
-        const categories: CompetencyCategory[] = ["academic", "career", "community", "other"];
-        const catAngles: Record<CompetencyCategory, number> = {
-            academic: -Math.PI / 2,
-            career: 0,
-            community: Math.PI / 2,
-            other: Math.PI,
-        };
-
-        categories.forEach(cat => {
-            const items = grouped[cat];
-            if (items.length === 0) return;
-
-            const baseAngle = catAngles[cat];
-            const spread = Math.PI / 4;
-
-            items.forEach((item, i) => {
-                const angle = baseAngle + (i - (items.length - 1) / 2) * (spread / Math.max(items.length, 1));
-                const dist = radius * (0.6 + (item.gradeLevel <= 3 ? 0.4 : item.gradeLevel <= 5 ? 0.25 : 0.1));
-                const x = centerX + Math.cos(angle) * dist;
-                const y = centerY + Math.sin(angle) * dist;
-
-                // 연결선
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(x, y);
-                ctx.strokeStyle = GRADE_LEVEL_COLORS[item.gradeLevel] + "60";
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                // 같은 카테고리 소재 간 연결
-                if (i > 0) {
-                    const prevItem = items[i - 1];
-                    const prevAngle = baseAngle + ((i - 1) - (items.length - 1) / 2) * (spread / Math.max(items.length, 1));
-                    const prevDist = radius * (0.6 + (prevItem.gradeLevel <= 3 ? 0.4 : prevItem.gradeLevel <= 5 ? 0.25 : 0.1));
-                    const px = centerX + Math.cos(prevAngle) * prevDist;
-                    const py = centerY + Math.sin(prevAngle) * prevDist;
-                    ctx.beginPath();
-                    ctx.moveTo(px, py);
-                    ctx.lineTo(x, y);
-                    ctx.strokeStyle = EVAL_COMPETENCY_COLORS[cat] + "40";
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([4, 4]);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
-
-                // 노드
-                const nodeR = 22 - item.gradeLevel;
-                ctx.beginPath();
-                ctx.arc(x, y, nodeR, 0, Math.PI * 2);
-                ctx.fillStyle = GRADE_LEVEL_COLORS[item.gradeLevel];
-                ctx.fill();
-                ctx.strokeStyle = EVAL_COMPETENCY_COLORS[cat];
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // 라벨
-                ctx.fillStyle = "#fff";
-                ctx.font = `bold ${Math.max(8, 11 - item.gradeLevel * 0.3)}px sans-serif`;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                const label = item.title.length > 6 ? item.title.slice(0, 5) + "…" : item.title;
-                ctx.fillText(label, x, y - 2);
-
-                // 등급 표시
-                ctx.font = "9px sans-serif";
-                ctx.fillStyle = "#ffffffaa";
-                ctx.fillText(`${item.gradeLevel}등급`, x, y + 10);
-            });
-        });
-
-        // 범례
-        ctx.font = "11px sans-serif";
-        ctx.textAlign = "left";
-        let legendY = 20;
-        categories.forEach(cat => {
-            ctx.fillStyle = EVAL_COMPETENCY_COLORS[cat];
-            ctx.fillRect(12, legendY - 5, 10, 10);
-            ctx.fillStyle = "#cbd5e1";
-            ctx.fillText(EVAL_COMPETENCY_LABELS[cat], 28, legendY + 2);
-            legendY += 18;
-        });
-
-    }, [materials, height]);
-
-    return (
-        <canvas
-            ref={canvasRef}
-            style={{ width: "100%", height: `${height}px`, borderRadius: 12 }}
-        />
-    );
-}
-
-// ==================== 레이더 차트 (Canvas) ====================
-
-function RadarChart({
-    scores,
-    maxScore = 35,
-    size = 280,
-}: {
-    scores: Record<CompetencyCategory, number>;
-    maxScore?: number;
-    size?: number;
-}) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = size * dpr;
-        canvas.height = size * dpr;
-        ctx.scale(dpr, dpr);
-
-        const cx = size / 2;
-        const cy = size / 2;
-        const r = size * 0.35;
-        const categories: CompetencyCategory[] = ["academic", "career", "community", "other"];
-
-        // 배경 그리드
-        ctx.fillStyle = "#0f172a";
-        ctx.beginPath();
-        ctx.roundRect(0, 0, size, size, 12);
-        ctx.fill();
-
-        for (let level = 1; level <= 5; level++) {
-            const lr = (r * level) / 5;
-            ctx.beginPath();
-            categories.forEach((_, i) => {
-                const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-                const x = cx + Math.cos(angle) * lr;
-                const y = cy + Math.sin(angle) * lr;
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            });
-            ctx.closePath();
-            ctx.strokeStyle = "#334155";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
-        // 축 라벨
-        categories.forEach((cat, i) => {
-            const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-            const lx = cx + Math.cos(angle) * (r + 25);
-            const ly = cy + Math.sin(angle) * (r + 25);
-            ctx.fillStyle = EVAL_COMPETENCY_COLORS[cat];
-            ctx.font = "bold 11px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(EVAL_COMPETENCY_LABELS[cat], lx, ly - 6);
-            ctx.fillStyle = "#94a3b8";
-            ctx.font = "10px sans-serif";
-            ctx.fillText(`${scores[cat]}점`, lx, ly + 8);
-        });
-
-        // 데이터 영역
-        ctx.beginPath();
-        categories.forEach((cat, i) => {
-            const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-            const val = Math.min(scores[cat] / maxScore, 1);
-            const x = cx + Math.cos(angle) * r * val;
-            const y = cy + Math.sin(angle) * r * val;
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        });
-        ctx.closePath();
-        ctx.fillStyle = "rgba(99, 102, 241, 0.25)";
-        ctx.fill();
-        ctx.strokeStyle = "#6366f1";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // 데이터 포인트
-        categories.forEach((cat, i) => {
-            const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-            const val = Math.min(scores[cat] / maxScore, 1);
-            const x = cx + Math.cos(angle) * r * val;
-            const y = cy + Math.sin(angle) * r * val;
-            ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = EVAL_COMPETENCY_COLORS[cat];
-            ctx.fill();
-        });
-
-    }, [scores, maxScore, size]);
-
-    return <canvas ref={canvasRef} style={{ width: size, height: size }} />;
-}
-
+import { RadarChart } from "@/components/score-visualizations/eval-graphs";
+import MaterialGraph from "@/components/graph/MaterialGraph";
 // ==================== 메인 페이지 ====================
 
 function EvaluationPage() {
@@ -463,7 +226,16 @@ function EvaluationPage() {
                                     <p className="mb-2 text-sm font-medium text-muted-foreground">
                                         {currentSemesterResult.grade}학년 {currentSemesterResult.semester}학기 — {currentSemesterResult.summary}
                                     </p>
-                                    <GradeGraph materials={currentSemesterResult.materials} height={380} />
+                                    <MaterialGraph
+                                        materials={currentSemesterResult.materials.map(m => ({
+                                            ...m,
+                                            title: m.title,
+                                            category: m.category as CompetencyCategory,
+                                            severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
+                                        })) as any[]}
+                                        centerLabel={`${currentSemesterResult.semester}학기 세특`}
+                                        initialHeight={380}
+                                    />
                                 </div>
 
                                 {/* 등급 범례 */}
@@ -474,7 +246,7 @@ function EvaluationPage() {
                                             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
                                             style={{ backgroundColor: GRADE_LEVEL_COLORS[g] }}
                                         >
-                                            {g}등급
+                                            {GRADE_LETTER_MAPPING[g]}
                                         </span>
                                     ))}
                                 </div>
@@ -484,10 +256,10 @@ function EvaluationPage() {
                                     {currentSemesterResult.materials.map((mat, i) => (
                                         <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
                                             <span
-                                                className="mt-0.5 inline-flex h-6 min-w-[24px] items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                                className="mt-0.5 inline-flex h-6 min-w-[24px] items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
                                                 style={{ backgroundColor: GRADE_LEVEL_COLORS[mat.gradeLevel] }}
                                             >
-                                                {mat.gradeLevel}
+                                                {GRADE_LETTER_MAPPING[mat.gradeLevel]}
                                             </span>
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
@@ -573,9 +345,20 @@ function EvaluationPage() {
 
                                 {/* 그래프 + 레이더 차트 */}
                                 <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="rounded-lg border bg-card p-4">
+                                    <div className="rounded-lg border bg-card p-4 overflow-hidden">
                                         <h5 className="mb-2 text-sm font-semibold">소재 그래프</h5>
-                                        <GradeGraph materials={currentComprehensiveResult.materials} height={350} />
+                                        <div className="w-full">
+                                          <MaterialGraph
+                                              materials={currentComprehensiveResult.materials.map(m => ({
+                                                  ...m,
+                                                  title: m.title,
+                                                  category: m.category as CompetencyCategory,
+                                                  severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
+                                              })) as any[]}
+                                              centerLabel="종합 세특"
+                                              initialHeight={350}
+                                          />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4">
                                         <h5 className="mb-2 text-sm font-semibold">영역별 역량</h5>

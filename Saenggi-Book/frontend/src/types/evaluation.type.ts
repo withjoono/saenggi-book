@@ -14,13 +14,23 @@ export const GRADE_LEVEL_COLORS: Record<number, string> = {
 };
 
 export const GRADE_LEVEL_LABELS: Record<number, string> = {
-    1: '1등급 (독보적)',
-    2: '2등급 (매우 강)',
-    3: '3등급 (강함)',
-    4: '4등급 (평균 이상)',
-    5: '5등급 (보통)',
-    6: '6등급 (약함)',
-    7: '7등급 (형식적)',
+    1: 'A+ (독보적)',
+    2: 'A (매우 강)',
+    3: 'B+ (강함)',
+    4: 'B (평균 이상)',
+    5: 'C+ (보통)',
+    6: 'C (약함)',
+    7: 'D (형식적)',
+};
+
+export const GRADE_LETTER_MAPPING: Record<number, string> = {
+    1: 'A+',
+    2: 'A',
+    3: 'B+',
+    4: 'B',
+    5: 'C+',
+    6: 'C',
+    7: 'D',
 };
 
 export const EVAL_COMPETENCY_LABELS: Record<CompetencyCategory, string> = {

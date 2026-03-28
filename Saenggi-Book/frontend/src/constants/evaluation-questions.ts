@@ -14,10 +14,10 @@ export const EVAL_QUESTIONS: EvalQuestion[] = [
     { id: 1, category: 'career', subCategory: '전공관련 교과이수 노력', question: '전공(계열)과 관련된 과목을 적절하게 선택하고, 이수한 과목은 얼마나 되는가?' },
     { id: 2, category: 'career', subCategory: '전공관련 교과이수 노력', question: '전공(계열)과 관련된 과목을 이수하기 위하여 추가적인 노력을 하였는가? (예: 공동교육과정, 온라인수업 소인수과목 등)' },
     { id: 3, category: 'career', subCategory: '전공관련 교과이수 노력', question: '전공(계열)과 관련된 교과의 성취수준은 적절한가?' },
-    { id: 4, category: 'career', subCategory: '전공관련 교과이수 노력', question: '진로와학(반)지도/선택과목 교육 학습단계(위계)에 따른 이수현황는가?' },
-    { id: 5, category: 'career', subCategory: '전공관련 교과이수 노력', question: '전공(계열)관련 과목에서 전공에 대한 관심과 이해가 드러나 있는가?' },
-    { id: 6, category: 'career', subCategory: '전공관련 활동과 경험', question: '전공 분야에 대한 궁금증이나 학업 관련 관심이 있는가?' },
-    { id: 7, category: 'career', subCategory: '전공관련 활동과 경험', question: '전공 분야나 관련 과목에서 적극적이고 구체적인 노력과 활동을 하였는가? 포트폴리오를 통을 종합적으로 고려한 성취수준은 적절한가?' },
+    { id: 4, category: 'career', subCategory: '전공관련 교과 성취도', question: '진로와학(반)지도/선택과목 교육 학습단계(위계)에 따른 이수현황는가?' },
+    { id: 5, category: 'career', subCategory: '전공관련 교과 성취도', question: '전공(계열)관련 과목에서 전공에 대한 관심과 이해가 드러나 있는가?' },
+    { id: 6, category: 'career', subCategory: '진로 탐색 활동과 경험', question: '전공 분야에 대한 궁금증이나 학업 관련 관심이 있는가?' },
+    { id: 7, category: 'career', subCategory: '진로 탐색 활동과 경험', question: '전공 분야나 관련 과목에서 적극적이고 구체적인 노력과 활동을 하였는가? 포트폴리오를 통을 종합적으로 고려한 성취수준은 적절한가?' },
 
     // ── 학업역량 (Q8~Q15) ──
     { id: 8, category: 'academic', subCategory: '학업성취도', question: '대학 수학에 필요한 기본 교과목(예: 국어, 수학, 영어, 사회/과학)의 교과성적은 적절한가? 그 외 교과목(예: 예술·체육, 기술·가정/정보, 제2외국어/한문, 교양 등)의 교과성적은 어느 정도인가? 유난히 소홀한 과목이 있는가?' },
@@ -68,8 +68,9 @@ export interface SubCategoryGroup {
 }
 
 export const SUB_CATEGORY_GROUPS: SubCategoryGroup[] = [
-    { name: '전공관련 교과이수 노력', category: 'career', questionIds: [1, 2, 3, 4, 5] },
-    { name: '전공관련 활동과 경험', category: 'career', questionIds: [6, 7] },
+    { name: '전공관련 교과이수 노력', category: 'career', questionIds: [1, 2, 3] },
+    { name: '전공관련 교과 성취도', category: 'career', questionIds: [4, 5] },
+    { name: '진로 탐색 활동과 경험', category: 'career', questionIds: [6, 7] },
     { name: '학업성취도', category: 'academic', questionIds: [8, 9] },
     { name: '학업태도', category: 'academic', questionIds: [10, 11, 12] },
     { name: '탐구력', category: 'academic', questionIds: [13, 14, 15] },
@@ -126,11 +127,15 @@ export const IMPROVEMENT_TIPS: Record<string, string[]> = {
     '전공관련 교과이수 노력': [
         '전공 관련 과목을 적극적으로 선택하고 이수한 이력을 구체적으로 기록하세요.',
         '공동교육과정, 온라인 수업 등 추가적인 교과 이수 노력을 보여주세요.',
-        '전공 관련 교과에서 높은 성취수준을 유지하세요.',
+        '지원 전공과 관련된 교과목을 학습 위계에 맞게 이수하세요.',
     ],
-    '전공관련 활동과 경험': [
-        '전공 분야에 대한 궁금증을 구체적인 탐구활동으로 표현하세요.',
-        '전공 관련 동아리, 프로젝트, 독서 활동 등의 경험을 쌓으세요.',
+    '전공관련 교과 성취도': [
+        '전공 관련 교과에서 우수한 성취도를 보여주세요.',
+        '진로선택과목에서도 적극적인 참여와 성과를 남기세요.',
+    ],
+    '진로 탐색 활동과 경험': [
+        '자신의 관심 분야와 관련된 교내 활동에 폭넓게 참여하세요.',
+        '전공(계열)에 대한 호기심을 동아리나 탐구 활동으로 연결하세요.',
     ],
     '학업성취도': [
         '기본 교과목(국·수·영·사/과)의 성적을 꾸준히 관리하세요.',

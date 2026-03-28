@@ -16,6 +16,7 @@ export interface MaterialItem {
     title: string;
     summary: string;
     category: CompetencyCategory;
+    gradeLevel?: number;
     severity: 'high' | 'medium' | 'low';
     sources: MaterialSource[];
 }

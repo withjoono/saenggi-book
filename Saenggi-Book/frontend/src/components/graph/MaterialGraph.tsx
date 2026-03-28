@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense, laz
 import * as d3 from 'd3-force';
 import styles from './IssueOnlyGraph.module.css';
 import { MaterialItem, CompetencyCategory, COMPETENCY_COLORS, COMPETENCY_LABELS } from '@/types/analysis.type';
+import { GRADE_LEVEL_COLORS, GRADE_LETTER_MAPPING } from '@/types/evaluation.type';
 
 const ForceGraph2D = lazy(() => import('react-force-graph-2d'));
 
@@ -11,6 +12,7 @@ interface MaterialNode {
     id: string;
     label: string;
     category: CompetencyCategory;
+    gradeLevel: number;
     severity: 'high' | 'medium' | 'low';
     detail?: string;
     isCenter?: boolean;
@@ -30,6 +32,7 @@ interface MaterialGraphProps {
     materials: MaterialItem[];
     centerLabel?: string;
     initialHeight?: number;
+    colorBy?: 'category' | 'gradeLevel';
     onMaterialClick?: (materialIndex: number) => void;
 }
 
@@ -51,6 +54,7 @@ export default function MaterialGraph({
     materials,
     centerLabel = '생기부',
     initialHeight = 500,
+    colorBy = 'category',
     onMaterialClick,
 }: MaterialGraphProps) {
     const graphRef = useRef<any>(null);
@@ -103,6 +107,7 @@ export default function MaterialGraph({
             id: '__center__',
             label: centerLabel,
             category: 'academic',
+            gradeLevel: 1, // dummy for center
             severity: 'high',
             isCenter: true,
             fx: 0,
@@ -112,13 +117,14 @@ export default function MaterialGraph({
         const n = materials.length;
         const materialNodes: MaterialNode[] = materials.map((mat, idx) => {
             const sev = mat.severity || 'medium';
-            const baseRadius = sev === 'high' ? 150 : sev === 'medium' ? 230 : 310;
+            const baseRadius = sev === 'high' ? 220 : sev === 'medium' ? 350 : 480;
             const angle = (2 * Math.PI * idx) / Math.max(n, 1) - Math.PI / 2;
 
             return {
                 id: `mat-${idx}`,
                 label: mat.title || `소재 ${idx + 1}`,
                 category: mat.category || 'other',
+                gradeLevel: mat.gradeLevel || 7,
                 severity: sev,
                 detail: mat.summary || '',
                 materialIndex: idx,
@@ -164,28 +170,31 @@ export default function MaterialGraph({
         if (!graphRef.current) return;
         const fg = graphRef.current;
 
-        fg.d3Force('charge')?.strength((nd: any) => nd.isCenter ? -2000 : -800);
+        fg.d3Force('charge')?.strength((nd: any) => nd.isCenter ? -3000 : -1200);
 
         fg.d3Force('link')?.distance((link: any) => {
             const target = typeof link.target === 'object' ? link.target : null;
-            if (!target) return 250;
+            if (!target) return 350;
             const sev = target.severity || 'medium';
             switch (sev) {
-                case 'high': return 160;
-                case 'medium': return 250;
-                case 'low': return 340;
-                default: return 250;
+                case 'high': return 220;
+                case 'medium': return 350;
+                case 'low': return 480;
+                default: return 350;
             }
         });
 
         fg.d3Force('link')?.strength(0.3);
 
         fg.d3Force('collide', d3.forceCollide()
-            .radius((nd: any) => (nd.isCenter ? CENTER_RADIUS : NODE_RADIUS) + 30)
-            .strength(1)
+            .radius((nd: any) => (nd.isCenter ? CENTER_RADIUS : NODE_RADIUS) + 60)
+            .strength(0.8)
             .iterations(4)
         );
-    }, [graphData]);
+
+        // 물리 엔진을 재가열하여 커스텀 포스가 초기 렌더링에 즉시 반영되게 함
+        fg.d3ReheatSimulation();
+    }, [graphData, dimensions]);
 
     // 노드 클릭
     const handleNodeClick = useCallback((node: any) => {
@@ -220,7 +229,11 @@ export default function MaterialGraph({
         const alpha = isDimmed ? 0.15 : 1;
 
         const isCenter = node.isCenter;
-        const color = isCenter ? CENTER_COLOR : (COMPETENCY_COLORS[node.category as CompetencyCategory] || COMPETENCY_COLORS.other);
+        const color = isCenter
+            ? CENTER_COLOR
+            : colorBy === 'gradeLevel'
+                ? GRADE_LEVEL_COLORS[node.gradeLevel] || COMPETENCY_COLORS.other
+                : COMPETENCY_COLORS[node.category as CompetencyCategory] || COMPETENCY_COLORS.other;
         const radius = isCenter ? CENTER_RADIUS : NODE_RADIUS;
 
         ctx.save();
@@ -317,12 +330,21 @@ export default function MaterialGraph({
                     <span className={styles.legendDot} style={{ backgroundColor: CENTER_COLOR }} />
                     중심
                 </span>
-                {(Object.entries(COMPETENCY_COLORS) as [CompetencyCategory, string][]).map(([cat, color]) => (
-                    <span key={cat} className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ backgroundColor: color }} />
-                        {COMPETENCY_LABELS[cat]}
-                    </span>
-                ))}
+                {(colorBy === 'category') ? (
+                    (Object.entries(COMPETENCY_COLORS) as [CompetencyCategory, string][]).map(([cat, color]) => (
+                        <span key={cat} className={styles.legendItem}>
+                            <span className={styles.legendDot} style={{ backgroundColor: color }} />
+                            {COMPETENCY_LABELS[cat]}
+                        </span>
+                    ))
+                ) : (
+                    [1, 2, 3, 4, 5, 6, 7].map(level => (
+                        <span key={level} className={styles.legendItem}>
+                            <span className={styles.legendDot} style={{ backgroundColor: GRADE_LEVEL_COLORS[level] }} />
+                            {GRADE_LETTER_MAPPING[level]}
+                        </span>
+                    ))
+                )}
                 <span className={styles.legendHint}>클릭하면 소재 상세 보기</span>
                 <button className={styles.fullscreenBtn} onClick={toggleFullscreen} title={isFullscreen ? '축소' : '전체화면'}>
                     {isFullscreen ? '⬜ 축소' : '⛶ 전체화면'}
