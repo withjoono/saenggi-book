@@ -57,3 +57,32 @@ export const SOURCE_TYPE_LABELS: Record<string, string> = {
     creative: '창체',
     behavior: '행특',
 };
+
+// ==================== Timeline Analysis Types ====================
+export interface TimelineNode {
+    id: string;
+    materialTitle: string;
+    grade: string;
+    summary: string;
+}
+
+export interface TimelineEdge {
+    source: string;
+    target: string;
+    reason: string;
+}
+
+export interface CompetencyTimeline {
+    nodes: TimelineNode[];
+    edges: TimelineEdge[];
+}
+
+export interface TimelineAnalysisResult {
+    academic: CompetencyTimeline;
+    career: CompetencyTimeline;
+    community: CompetencyTimeline;
+}
+
+export interface GenerateTimelineRequestDto {
+    materials: MaterialItem[];
+}

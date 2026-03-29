@@ -6,12 +6,14 @@ import MaterialGraph from "@/components/graph/MaterialGraph";
 import {
     MaterialItem,
     SchoolRecordAnalysis,
+    TimelineAnalysisResult,
     AnalyzeRequestDto,
     CompetencyCategory,
     COMPETENCY_LABELS,
     COMPETENCY_COLORS,
     SOURCE_TYPE_LABELS,
 } from "@/types/analysis.type";
+import CompetencyTimeline from "@/components/score-visualizations/competency-timeline";
 
 export const Route = createLazyFileRoute("/sb/_layout/material-analysis")({
     component: MaterialAnalysisPage,
@@ -25,6 +27,10 @@ function MaterialAnalysisPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedMaterialIndex, setSelectedMaterialIndex] = useState<number | null>(null);
+
+    const [timeline, setTimeline] = useState<TimelineAnalysisResult | null>(null);
+    const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
+    const [timelineError, setTimelineError] = useState<string | null>(null);
 
     // 생기부 텍스트 데이터 수집 (프론트엔드에서 수집 → 백엔드 AI로 전송)
     const analyzeRequestData = useMemo((): AnalyzeRequestDto | null => {
@@ -104,6 +110,21 @@ function MaterialAnalysisPage() {
             setIsAnalyzing(false);
         }
     }, [analyzeRequestData]);
+
+    const handleGenerateTimeline = useCallback(async () => {
+        if (!analysis || analysis.materials.length === 0) return;
+        setIsGeneratingTimeline(true);
+        setTimelineError(null);
+        try {
+            const res = await nestApiClient.post("/schoolrecord/timeline", { materials: analysis.materials });
+            setTimeline(res.data?.data as TimelineAnalysisResult);
+        } catch (err: any) {
+            console.error("타임라인 생성 실패:", err);
+            setTimelineError("타임라인을 생성하는 중 오류가 발생했습니다.");
+        } finally {
+            setIsGeneratingTimeline(false);
+        }
+    }, [analysis]);
 
     // 선택된 소재 정보
     const selectedMaterial: MaterialItem | null =
@@ -363,6 +384,35 @@ function MaterialAnalysisPage() {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* 타임라인 섹션 */}
+                            <div className="mt-12 space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900">역량 발달 서사 (Timeline)</h3>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            AI가 추출된 소재들을 연결하여 학년별 지적 호기심 확장과 성장 스토리를 직관적인 플로우차트로 시각화합니다.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={handleGenerateTimeline}
+                                        disabled={isGeneratingTimeline}
+                                        className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-gray-800 disabled:opacity-50"
+                                    >
+                                        {isGeneratingTimeline ? "분석 중..." : timeline ? "새로고침" : "서사 타임라인 생성하기"}
+                                    </button>
+                                </div>
+
+                                {timelineError && (
+                                    <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                                        {timelineError}
+                                    </div>
+                                )}
+
+                                {(timeline || isGeneratingTimeline) && (
+                                    <CompetencyTimeline timelineResult={timeline} isLoading={isGeneratingTimeline} />
+                                )}
                             </div>
                         </>
                     )}
