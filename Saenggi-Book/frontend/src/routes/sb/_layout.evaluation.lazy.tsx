@@ -154,6 +154,7 @@ function EvaluationPage() {
         }
     }, [selectedComprehensive, getComprehensiveData]);
 
+
     // ── 현재 보여줄 결과 ──
     const currentSemesterResult = selectedSemester ? semesterResults[selectedSemester] : null;
     const currentComprehensiveResult = selectedComprehensive ? comprehensiveResults[selectedComprehensive] : null;
@@ -474,6 +475,7 @@ function EvaluationPage() {
                             </div>
                         )}
                     </section>
+
                 </>
             )}
 

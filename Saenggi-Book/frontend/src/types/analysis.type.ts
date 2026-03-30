@@ -73,16 +73,18 @@ export interface TimelineEdge {
 }
 
 export interface CompetencyTimeline {
+    overall_storyline: string;
     nodes: TimelineNode[];
     edges: TimelineEdge[];
 }
 
 export interface TimelineAnalysisResult {
-    academic: CompetencyTimeline;
-    career: CompetencyTimeline;
-    community: CompetencyTimeline;
+    academic?: CompetencyTimeline;
+    career?: CompetencyTimeline;
+    community?: CompetencyTimeline;
 }
 
 export interface GenerateTimelineRequestDto {
     materials: MaterialItem[];
+    category: 'academic' | 'career' | 'community';
 }

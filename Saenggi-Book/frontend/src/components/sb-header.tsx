@@ -158,163 +158,142 @@ export const SbHeader = () => {
                     홈
                   </Link>
 
+                  {/* 입력 */}
                   <div className="w-full space-y-1">
-                    <div className="px-1 py-2 text-sm font-semibold text-olive-500">
-                      입력과 평가
+                    <div className="px-1 py-1 text-sm font-semibold text-olive-500">
+                      입력
                     </div>
                     <Link
                       to="/sb/school-record"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start gap-2 px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start gap-2 px-1 text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
                       생기부 입력
                     </Link>
+                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-gray-400">교과</div>
                     <Link
-                      to="/sb/request"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      to="#"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-400 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
-                      AI 사정관 평가
+                      교과 (준비중)
                     </Link>
-                    <Link
-                      to="/sb/evaluation-list"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      생기부 평가 내역
-                    </Link>
-                  </div>
-
-                  <Separator className="my-2 bg-gray-200" />
-
-                  <div className="w-full space-y-1">
-                    <div className="px-1 py-2 text-sm font-semibold text-olive-500">
-                      교과
-                    </div>
-                    <Link
-                      to="/sb/performance"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start gap-2 px-1 text-gray-700 hover:bg-gray-100",
-                      )}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      성적 분석
-                    </Link>
-                  </div>
-
-                  <Separator className="my-2 bg-gray-200" />
-
-                  <div className="w-full space-y-1">
-                    <div className="px-1 py-2 text-sm font-semibold text-olive-500">
-                      비교과
-                    </div>
+                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-olive-400">비교과</div>
                     <Link
                       to="/sb/attendance"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
                       출결
                     </Link>
                     <Link
                       to="/sb/setuk"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
                       세특
                     </Link>
                     <Link
                       to="/sb/creative-activity"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
                       창체 및 행특
-                    </Link>
-                    <Link
-                      to="/sb/build"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      빌드 (활동 추천)
-                    </Link>
-                    <Link
-                      to="/sb/evaluation"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      학기 평가
                     </Link>
                   </div>
 
                   <Separator className="my-2 bg-gray-200" />
 
+                  {/* 분석 */}
                   <div className="w-full space-y-1">
-                    <div className="px-1 py-2 text-sm font-semibold text-olive-500">
-                      전형탐색
+                    <div className="px-1 py-1 text-sm font-semibold text-olive-500">
+                      분석
                     </div>
                     <Link
-                      to="/sb/compatibility"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start gap-2 px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      to="/sb/performance"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
-                      계열 적합성 진단
+                      교과 분석
+                    </Link>
+                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-olive-400">비교과 분석</div>
+                    <Link
+                      to="/sb/evaluation-list?tab=academic"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      학업 역량
                     </Link>
                     <Link
-                      to="/sb/subject"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      to="/sb/evaluation-list?tab=career"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
-                      교과 전형 탐색
+                      진로 역량
+                    </Link>
+                    <Link
+                      to="/sb/evaluation-list?tab=community"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      공동체 역량
+                    </Link>
+                    <Link
+                      to="/sb/evaluation-list?tab=other"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      기타
+                    </Link>
+                    <Link
+                      to="/sb/request"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 mt-2 text-emerald-600 font-bold hover:bg-emerald-50")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      종합 분석
+                    </Link>
+                  </div>
+
+                  <Separator className="my-2 bg-gray-200" />
+
+                  {/* 전형 */}
+                  <div className="w-full space-y-1">
+                    <Link
+                      to="/sb/subject"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 font-semibold text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      교과 전형
                     </Link>
                     <Link
                       to="/sb/comprehensive"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 font-semibold text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
-                      학종 전형 탐색
+                      종합 전형
                     </Link>
                     <Link
                       to="/sb/nonsul"
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start px-1 text-gray-700 hover:bg-gray-100",
-                      )}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 font-semibold text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
-                      논술 전형 탐색
+                      논술 전형
+                    </Link>
+                  </div>
+
+                  <Separator className="my-2 bg-gray-200" />
+
+                  {/* 빌드? */}
+                  <div className="w-full space-y-1">
+                    <div className="px-1 py-1 text-sm font-semibold text-olive-500">
+                      빌드?
+                    </div>
+                    <Link
+                      to="/sb/build"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      목표 대학
                     </Link>
                   </div>
 
@@ -444,162 +423,124 @@ export const SbHeader = () => {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
 
-                {/* 입력과 평가 */}
+                {/* 입력 */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
                     className="bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 data-[state=open]:bg-gray-100"
                     onPointerMove={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                     onPointerLeave={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                   >
-                    입력과 평가
+                    입력
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="p-4 md:w-[400px]">
-                      <div className="flex flex-col gap-2">
+                    <div className="p-4 md:w-[280px]">
+                      <div className="flex flex-col gap-1">
                         <Link
                           to="/sb/school-record"
-                          className="flex items-center gap-3 rounded-lg px-3 py-3 hover:bg-accent"
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900"
                         >
-                          <div>
-                            <div className="text-sm font-medium">생기부 입력</div>
-                            <div className="text-xs text-muted-foreground">
-                              생기부 데이터를 입력합니다
-                            </div>
-                          </div>
+                          생기부 입력
                         </Link>
-                        <Link
-                          to="/sb/request"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">AI 사정관 평가</span>
-                        </Link>
-                        <Link
-                          to="/sb/evaluation-list"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">생기부 평가 내역</span>
-                        </Link>
+                        
+                        <div className="mt-2 px-3 flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+                           <span className="text-xs font-bold text-gray-500">교과</span>
+                        </div>
+                        <Link to="#" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-400">교과 (준비중)</Link>
+
+                        <div className="mt-2 px-3 flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-olive-500"></div>
+                           <span className="text-xs font-bold text-olive-600">비교과</span>
+                        </div>
+                        <Link to="/sb/attendance" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">출결</Link>
+                        <Link to="/sb/setuk" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">세특</Link>
+                        <Link to="/sb/creative-activity" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">창체 및 행특</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* 교과 */}
+                {/* 분석 */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
                     className="bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 data-[state=open]:bg-gray-100"
                     onPointerMove={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                     onPointerLeave={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                   >
-                    교과
+                    분석
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="p-4 md:w-[400px]">
-                      <div className="flex flex-col gap-2">
-                        <Link
-                          to="/sb/performance"
-                          className="flex items-center gap-3 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <div>
-                            <div className="text-sm font-medium">성적 분석</div>
-                            <div className="text-xs text-muted-foreground">
-                              입력된 성적을 분석합니다
-                            </div>
-                          </div>
-                        </Link>
+                    <div className="p-4 md:w-[280px]">
+                      <div className="flex flex-col gap-1">
+                        <Link to="/sb/performance" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">교과 분석</Link>
+                        
+                        <div className="mt-2 px-3 flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-olive-500"></div>
+                           <span className="text-xs font-bold text-olive-600">비교과 분석</span>
+                        </div>
+                        <Link to="/sb/evaluation-list?tab=academic" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">학업 역량</Link>
+                        <Link to="/sb/evaluation-list?tab=career" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">진로 역량</Link>
+                        <Link to="/sb/evaluation-list?tab=community" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">공동체 역량</Link>
+                        <Link to="/sb/evaluation-list?tab=other" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">기타</Link>
+                        
+                        <Link to="/sb/request" className="flex items-center rounded-lg px-3 py-2 mt-2 -ml-1 text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100">종합 분석</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* 비교과 */}
+                {/* 교과 전형 */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                    )}
+                    asChild
+                  >
+                    <Link to="/sb/subject">교과 전형</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* 종합 전형 */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                    )}
+                    asChild
+                  >
+                    <Link to="/sb/comprehensive">종합 전형</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* 논술 전형 */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                    )}
+                    asChild
+                  >
+                    <Link to="/sb/nonsul">논술 전형</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* 빌드? */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
                     className="bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 data-[state=open]:bg-gray-100"
                     onPointerMove={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                     onPointerLeave={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
                   >
-                    비교과
+                    빌드?
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="p-4 md:w-[400px]">
-                      <div className="flex flex-col gap-2">
-                        <Link
-                          to="/sb/attendance"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">출결</span>
-                        </Link>
-                        <Link
-                          to="/sb/setuk"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">세특</span>
-                        </Link>
-                        <Link
-                          to="/sb/creative-activity"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">창체 및 행특</span>
-                        </Link>
-                        <Link
-                          to="/sb/build"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">빌드 (활동 추천)</span>
-                        </Link>
-                        <Link
-                          to="/sb/evaluation"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">학기 평가</span>
-                        </Link>
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                {/* 전형탐색 */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger
-                    className="bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 data-[state=open]:bg-gray-100"
-                    onPointerMove={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
-                    onPointerLeave={(e: React.PointerEvent<HTMLButtonElement>) => e.preventDefault()}
-                  >
-                    전형탐색
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="p-4 md:w-[350px]">
-                      <div className="flex flex-col gap-2">
-                        <Link
-                          to="/sb/compatibility"
-                          className="flex items-center gap-3 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <div>
-                            <div className="text-sm font-medium">계열 적합성 진단</div>
-                            <div className="text-xs text-muted-foreground">
-                              나에게 맞는 계열을 진단합니다
-                            </div>
-                          </div>
-                        </Link>
-                        <Link
-                          to="/sb/subject"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">교과 전형 탐색</span>
-                        </Link>
-                        <Link
-                          to="/sb/comprehensive"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">학종 전형 탐색</span>
-                        </Link>
-                        <Link
-                          to="/sb/nonsul"
-                          className="flex items-center gap-2 rounded-lg px-3 py-3 hover:bg-accent"
-                        >
-                          <span className="text-sm font-medium">논술 전형 탐색</span>
-                        </Link>
+                    <div className="p-2 md:w-[150px]">
+                      <div className="flex flex-col gap-1">
+                        <Link to="/sb/build" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">목표 대학</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>

@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Loader2, Zap } from "lucide-react";
+import { Button } from "@/components/custom/button";
+import nestApiClient from "@/stores/server/api-client";
+import CompetencyFlowGraph from "@/components/score-visualizations/competency-flow-graph";
+import { CompetencyTimeline as ICompetencyTimeline } from "@/types/analysis.type";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -310,10 +315,55 @@ function NavigationCard({ value, title, icon, score, subtitle, colorClass }: any
 
 export function AiEvaluationDetail({
   evaluation,
+  defaultTab = "overview",
 }: {
   evaluation: IAiEvaluation;
+  defaultTab?: string;
 }) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
   const [selectedMaterialIdx, setSelectedMaterialIdx] = useState<Record<string, number | null>>({});
+
+  const [timelineData, setTimelineData] = useState<Record<string, ICompetencyTimeline | null>>({});
+  const [isGeneratingTimeline, setIsGeneratingTimeline] = useState<Record<string, boolean>>({});
+  const [timelineError, setTimelineError] = useState<Record<string, string | null>>({});
+
+  const getMaterialsByCategory = (category: string) => 
+    evaluation.materials?.filter(m => m.category === category) || [];
+
+  const handleGenerateTimeline = async (category: 'academic' | 'career' | 'community') => {
+      const categoryMaterials = getMaterialsByCategory(category);
+      if (categoryMaterials.length === 0) return;
+
+      setIsGeneratingTimeline(prev => ({ ...prev, [category]: true }));
+      setTimelineError(prev => ({ ...prev, [category]: null }));
+
+      try {
+          const res = await nestApiClient.post("/schoolrecord/timeline", { 
+              materials: categoryMaterials, 
+              category, 
+              evaluationId: evaluation.id 
+          });
+          const timeline = res.data?.data || res.data;
+          
+          const hasNodes = timeline?.nodes && timeline.nodes.length > 0;
+          const hasStoryline = !!(timeline?.overall_storyline || timeline?.overallStoryline);
+          
+          if (!hasNodes && !hasStoryline) {
+              setTimelineError(prev => ({ ...prev, [category]: "AI가 서사 연결을 찾지 못했습니다. 다시 시도해주세요." }));
+          } else {
+              setTimelineData(prev => ({ ...prev, [category]: timeline as ICompetencyTimeline }));
+          }
+      } catch (err: any) {
+          console.error(`[${category}] 타임라인 생성 실패:`, err);
+          setTimelineError(prev => ({ ...prev, [category]: "타임라인 생성 중 오류가 발생했습니다. 다시 시도해주세요." }));
+      } finally {
+          setIsGeneratingTimeline(prev => ({ ...prev, [category]: false }));
+      }
+  };
 
   const handleMaterialClick = (tab: string, idx: number) => {
     setSelectedMaterialIdx(prev => ({ ...prev, [tab]: prev[tab] === idx ? null : idx }));
@@ -338,9 +388,7 @@ export function AiEvaluationDetail({
     other: evaluation.scoreOther || 0,
   };
 
-  const getMaterialsByCategory = (category: string) => 
-    evaluation.materials?.filter(m => m.category === category) || [];
-    
+
   const getAnnotationsByCategory = (category: string) => 
     evaluation.annotations?.filter(a => a.category === category) || [];
 
@@ -365,66 +413,96 @@ export function AiEvaluationDetail({
         <p className="mt-4 max-w-2xl text-sm font-medium text-slate-700 dark:text-slate-300 px-4">
           {evaluation.summary}
         </p>
+
+        <details className="mt-5 w-full max-w-2xl text-left bg-white/80 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group">
+          <summary className="px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer list-none flex items-center justify-between hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
+            <span className="flex items-center gap-2">
+              <span className="text-primary text-base">ℹ️</span> 7단계 평가 척도 안내
+            </span>
+            <span className="text-slate-400 group-open:rotate-180 transition-transform duration-300">▼</span>
+          </summary>
+          <div className="px-5 pb-5 pt-2 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-950/40">
+            <ul className="space-y-3 text-[13px] text-slate-600 dark:text-slate-400 mt-2">
+              <li className="flex gap-3"><Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 min-w-[56px] justify-center">A+ (탁월)</Badge> <span className="flex-1 pt-0.5">교육과정을 초월한 자발적 심화 탐구 및 독창적 결과물 산출.</span></li>
+              <li className="flex gap-3"><Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border-blue-500/20 min-w-[56px] justify-center">A (우수)</Badge> <span className="flex-1 pt-0.5">구체적 근거가 있는 주도적 학습 및 전공 관련 심화 성취.</span></li>
+              <li className="flex gap-3"><Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20 min-w-[56px] justify-center">B+ (양호)</Badge> <span className="flex-1 pt-0.5">성취 기준의 성실한 이수 및 안정적 수준의 탐구 활동.</span></li>
+              <li className="flex gap-3"><Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20 min-w-[56px] justify-center">B (보통)</Badge> <span className="flex-1 pt-0.5">주어진 과제의 단순 수행 및 수동적 참여 중심 서술.</span></li>
+              <li className="flex gap-3"><Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 border-orange-500/20 min-w-[56px] justify-center">C+ (미흡)</Badge> <span className="flex-1 pt-0.5">구체성이 결여된 나열식 기록 및 미흡한 역량 수준.</span></li>
+              <li className="flex gap-3"><Badge className="bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-500/20 border-slate-500/20 min-w-[56px] justify-center">C (부족)</Badge> <span className="flex-1 pt-0.5">평가 불가 수준의 기록 부실 및 근거 미비.</span></li>
+              <li className="flex gap-3"><Badge className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-red-500/20 min-w-[56px] justify-center">D (부적격)</Badge> <span className="flex-1 pt-0.5">심각한 결격 사유 존재.</span></li>
+            </ul>
+          </div>
+        </details>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="flex md:grid w-full grid-cols-5 h-auto p-0 bg-transparent gap-3 overflow-x-auto pb-4 snap-x justify-start snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          <NavigationCard 
-            value="overview" title="종합역량" icon="👑" score={totalScore} subtitle="총점"
-            colorClass={{
-              ring: "hover:border-primary/30 data-[state=active]:ring-2 data-[state=active]:ring-primary/20",
-              text: "group-data-[state=active]:text-primary dark:group-data-[state=active]:text-primary",
-              gradientText: "group-data-[state=active]:from-primary group-data-[state=active]:to-indigo-500",
-              iconBg: "bg-slate-100 dark:bg-slate-800 group-data-[state=active]:bg-primary",
-              glowbg: "bg-primary/20",
-              bgFill: "data-[state=active]:from-primary/10 data-[state=active]:to-primary/5"
-            }}
-          />
-          <NavigationCard 
-            value="academic" title="학업역량" icon="📚" score={scores.academic} subtitle="세부 역량 점수"
-            colorClass={{
-              ring: "hover:border-blue-500/30 data-[state=active]:ring-2 data-[state=active]:ring-blue-500/20",
-              text: "group-data-[state=active]:text-blue-600 dark:group-data-[state=active]:text-blue-400",
-              gradientText: "group-data-[state=active]:from-blue-600 group-data-[state=active]:to-blue-400",
-              iconBg: "bg-slate-100 dark:bg-slate-800 group-data-[state=active]:bg-blue-500",
-              glowbg: "bg-blue-500/20",
-              bgFill: "data-[state=active]:from-blue-500/10 data-[state=active]:to-blue-500/5"
-            }}
-          />
-          <NavigationCard 
-            value="career" title="진로역량" icon="🎯" score={scores.career} subtitle="세부 역량 점수"
-            colorClass={{
-              ring: "hover:border-emerald-500/30 data-[state=active]:ring-2 data-[state=active]:ring-emerald-500/20",
-              text: "group-data-[state=active]:text-emerald-600 dark:group-data-[state=active]:text-emerald-400",
-              gradientText: "group-data-[state=active]:from-emerald-600 group-data-[state=active]:to-emerald-400",
-              iconBg: "bg-slate-100 dark:bg-slate-800 group-data-[state=active]:bg-emerald-500",
-              glowbg: "bg-emerald-500/20",
-              bgFill: "data-[state=active]:from-emerald-500/10 data-[state=active]:to-emerald-500/5"
-            }}
-          />
-          <NavigationCard 
-            value="community" title="공동체역량" icon="🤝" score={scores.community} subtitle="세부 역량 점수"
-            colorClass={{
-              ring: "hover:border-amber-500/30 data-[state=active]:ring-2 data-[state=active]:ring-amber-500/20",
-              text: "group-data-[state=active]:text-amber-600 dark:group-data-[state=active]:text-amber-400",
-              gradientText: "group-data-[state=active]:from-amber-600 group-data-[state=active]:to-amber-500",
-              iconBg: "bg-slate-100 dark:bg-slate-800 group-data-[state=active]:bg-amber-500",
-              glowbg: "bg-amber-500/20",
-              bgFill: "data-[state=active]:from-amber-500/10 data-[state=active]:to-amber-500/5"
-            }}
-          />
-          <NavigationCard 
-            value="other" title="기타역량" icon="✨" score={scores.other} subtitle="세부 역량 점수"
-            colorClass={{
-              ring: "hover:border-purple-500/30 data-[state=active]:ring-2 data-[state=active]:ring-purple-500/20",
-              text: "group-data-[state=active]:text-purple-600 dark:group-data-[state=active]:text-purple-400",
-              gradientText: "group-data-[state=active]:from-purple-600 group-data-[state=active]:to-purple-400",
-              iconBg: "bg-slate-100 dark:bg-slate-800 group-data-[state=active]:bg-purple-500",
-              glowbg: "bg-purple-500/20",
-              bgFill: "data-[state=active]:from-purple-500/10 data-[state=active]:to-purple-500/5"
-            }}
-          />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="flex w-full md:w-[280px] h-auto p-0 bg-transparent gap-3 pb-4">
+          {activeTab === "overview" && (
+            <NavigationCard 
+              value="overview" title="종합역량" icon="👑" score={totalScore} subtitle="총점"
+              colorClass={{
+                ring: "border-primary/30 ring-2 ring-primary/20",
+                text: "text-primary dark:text-primary",
+                gradientText: "from-primary to-indigo-500",
+                iconBg: "bg-primary text-white",
+                glowbg: "bg-primary/20 opacity-100",
+                bgFill: "from-primary/10 to-primary/5"
+              }}
+            />
+          )}
+          {activeTab === "academic" && (
+            <NavigationCard 
+              value="academic" title="학업역량" icon="📚" score={scores.academic} subtitle="세부 역량 점수"
+              colorClass={{
+                ring: "border-blue-500/30 ring-2 ring-blue-500/20",
+                text: "text-blue-600 dark:text-blue-400",
+                gradientText: "from-blue-600 to-blue-400",
+                iconBg: "bg-blue-500 text-white",
+                glowbg: "bg-blue-500/20 opacity-100",
+                bgFill: "from-blue-500/10 to-blue-500/5"
+              }}
+            />
+          )}
+          {activeTab === "career" && (
+            <NavigationCard 
+              value="career" title="진로역량" icon="🎯" score={scores.career} subtitle="세부 역량 점수"
+              colorClass={{
+                ring: "border-emerald-500/30 ring-2 ring-emerald-500/20",
+                text: "text-emerald-600 dark:text-emerald-400",
+                gradientText: "from-emerald-600 to-emerald-400",
+                iconBg: "bg-emerald-500 text-white",
+                glowbg: "bg-emerald-500/20 opacity-100",
+                bgFill: "from-emerald-500/10 to-emerald-500/5"
+              }}
+            />
+          )}
+          {activeTab === "community" && (
+            <NavigationCard 
+              value="community" title="공동체역량" icon="🤝" score={scores.community} subtitle="세부 역량 점수"
+              colorClass={{
+                ring: "border-amber-500/30 ring-2 ring-amber-500/20",
+                text: "text-amber-600 dark:text-amber-400",
+                gradientText: "from-amber-600 to-amber-500",
+                iconBg: "bg-amber-500 text-white",
+                glowbg: "bg-amber-500/20 opacity-100",
+                bgFill: "from-amber-500/10 to-amber-500/5"
+              }}
+            />
+          )}
+          {activeTab === "other" && (
+            <NavigationCard 
+              value="other" title="기타역량" icon="✨" score={scores.other} subtitle="세부 역량 점수"
+              colorClass={{
+                ring: "border-purple-500/30 ring-2 ring-purple-500/20",
+                text: "text-purple-600 dark:text-purple-400",
+                gradientText: "from-purple-600 to-purple-400",
+                iconBg: "bg-purple-500 text-white",
+                glowbg: "bg-purple-500/20 opacity-100",
+                bgFill: "from-purple-500/10 to-purple-500/5"
+              }}
+            />
+          )}
         </TabsList>
 
         <div className="mt-6">
@@ -549,194 +627,371 @@ export function AiEvaluationDetail({
 
           {/* ======================= 학업 탭 ======================= */}
           <TabsContent value="academic" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden">
-                <div className="text-center mb-6 w-full">
-                  <h4 className="text-lg font-bold text-blue-800 dark:text-blue-400">🎯 학업 세부 역량 (총점: {scores.academic}점)</h4>
-                  <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
-                </div>
-                {(() => {
-                  const subScores = getSubCategoryScores('academic', evaluation.questionScores);
-                  const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
-                  if (Object.keys(radarScores).length < 3) {
-                     return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
-                  }
-                  return <RadarChart scores={radarScores} maxScore={7} size={260} />;
-                })()}
-              </Card>
-              
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden">
-                <div className="text-center mb-4 w-full">
-                  <h4 className="text-lg font-bold text-blue-800 dark:text-blue-400">📊 세부 역량 평균 점수</h4>
-                  <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
-                </div>
-                <div className="w-full flex-1">
-                   <VerticalScoreBarChart scores={getSubCategoryScores('academic', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['academic']} />
-                </div>
-              </Card>
-            </div>
+             <Tabs defaultValue="univ-criteria" className="w-full">
+                <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="materials" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">🧩</span>
+                      <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="comprehensive" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">💡</span>
+                      <span>종합 평가</span>
+                   </TabsTrigger>
+                </TabsList>
 
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">📚</span> 학업 역량 상세 분석</h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {getAnnotationsByCategory('academic').map((ann, i) => (
-                  <AnnotationBlock key={`academic-ann-${i}`} annotation={ann} />
-                ))}
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">🔀</span> 관련 핵심 소재 네트워크</h4>
-              <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden bg-slate-950">
-                <div className="w-full">
-                  <MaterialGraph 
-                    materials={getMaterialsByCategory('academic').map(m => ({
-                      ...m,
-                      severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
-                    })) as any[]} 
-                    centerLabel="학업 역량" 
-                    initialHeight={550} 
-                    colorBy="gradeLevel"
-                    onMaterialClick={(idx) => handleMaterialClick('academic', idx)}
-                  />
-                </div>
-              </Card>
-              <MaterialsList materials={getMaterialsByCategory('academic')} tabId="academic" highlightedIndex={selectedMaterialIdx.academic} />
-            </div>
+                {/* --- 1. 대학 평가 항목 위주 --- */}
+                <TabsContent value="univ-criteria" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <CategoryQuestionList category="academic" questionScores={evaluation.questionScores} />
+                </TabsContent>
 
-            <Separator />
+                {/* --- 2. 소재 위주 --- */}
+                <TabsContent value="materials" className="space-y-8 mt-0 animate-in fade-in duration-300">
+                   <div className="space-y-4">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">🔀</span> 관련 핵심 소재 네트워크</h4>
+                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden bg-slate-950">
+                       <div className="w-full">
+                         <MaterialGraph 
+                           materials={getMaterialsByCategory('academic').map(m => ({
+                             ...m,
+                             severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
+                           })) as any[]} 
+                           centerLabel="학업 역량" 
+                           initialHeight={550} 
+                           colorBy="gradeLevel"
+                           onMaterialClick={(idx) => handleMaterialClick('academic', idx)}
+                         />
+                       </div>
+                     </Card>
+                     <MaterialsList materials={getMaterialsByCategory('academic')} tabId="academic" highlightedIndex={selectedMaterialIdx.academic} />
+                   </div>
 
-            <CategoryQuestionList category="academic" questionScores={evaluation.questionScores} />
+                   <Separator />
+                   
+                   <div className="space-y-4 pt-4">
+                     <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                           <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">📈</span> 학업 역량 발달 서사 (Timeline)</h4>
+                           <p className="text-sm text-gray-500 mt-1">이 평가의 학업 역량 관련 소재들만 모아 3년간의 성장 스토리를 직관적인 플로우차트로 시각화합니다.</p>
+                        </div>
+                        <Button
+                           onClick={() => handleGenerateTimeline('academic')}
+                           disabled={isGeneratingTimeline['academic']}
+                           className="gap-2 shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
+                           variant={timelineData['academic'] ? "outline" : "default"}
+                        >
+                           {isGeneratingTimeline['academic'] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                           {timelineData['academic'] ? "타임라인 새로고침" : "학업 서사 타임라인 생성하기"}
+                        </Button>
+                     </div>
+                     {timelineError['academic'] && (
+                         <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                             {timelineError['academic']}
+                         </div>
+                     )}
+                     {(timelineData['academic'] || isGeneratingTimeline['academic']) && (
+                         <CompetencyFlowGraph data={timelineData['academic'] || null} category="academic" isLoading={isGeneratingTimeline['academic']} />
+                     )}
+                   </div>
+                </TabsContent>
+
+                {/* --- 3. 종합 평가 --- */}
+                <TabsContent value="comprehensive" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden">
+                       <div className="text-center mb-6 w-full">
+                         <h4 className="text-lg font-bold text-blue-800 dark:text-blue-400">🎯 학업 세부 역량 (총점: {scores.academic}점)</h4>
+                         <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
+                       </div>
+                       {(() => {
+                         const subScores = getSubCategoryScores('academic', evaluation.questionScores);
+                         const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
+                         if (Object.keys(radarScores).length < 3) {
+                            return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
+                         }
+                         return <RadarChart scores={radarScores} maxScore={7} size={260} />;
+                       })()}
+                     </Card>
+                     
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden">
+                       <div className="text-center mb-4 w-full">
+                         <h4 className="text-lg font-bold text-blue-800 dark:text-blue-400">📊 세부 역량 평균 점수</h4>
+                         <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
+                       </div>
+                       <div className="w-full flex-1">
+                          <VerticalScoreBarChart scores={getSubCategoryScores('academic', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['academic']} />
+                       </div>
+                     </Card>
+                   </div>
+       
+                   <div className="space-y-4 mt-6">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">📝</span> 학업 역량 상세 분석</h4>
+                     <div className="grid gap-4 sm:grid-cols-2">
+                       {getAnnotationsByCategory('academic').map((ann, i) => (
+                         <AnnotationBlock key={`academic-ann-${i}`} annotation={ann} />
+                       ))}
+                     </div>
+                   </div>
+                </TabsContent>
+             </Tabs>
           </TabsContent>
 
           {/* ======================= 진로 탭 ======================= */}
           <TabsContent value="career" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden">
-                <div className="text-center mb-6 w-full">
-                  <h4 className="text-lg font-bold text-emerald-800 dark:text-emerald-400">🎯 진로 세부 역량 (총점: {scores.career}점)</h4>
-                  <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
-                </div>
-                {(() => {
-                  const subScores = getSubCategoryScores('career', evaluation.questionScores);
-                  const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
-                  if (Object.keys(radarScores).length < 3) {
-                     return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
-                  }
-                  return <RadarChart scores={radarScores} maxScore={7} size={260} />;
-                })()}
-              </Card>
-              
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden">
-                <div className="text-center mb-4 w-full">
-                  <h4 className="text-lg font-bold text-emerald-800 dark:text-emerald-400">📊 세부 역량 평균 점수</h4>
-                  <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
-                </div>
-                <div className="w-full flex-1">
-                   <VerticalScoreBarChart scores={getSubCategoryScores('career', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['career']} />
-                </div>
-              </Card>
-            </div>
+             <Tabs defaultValue="univ-criteria" className="w-full">
+                <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="materials" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">🧩</span>
+                      <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="comprehensive" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">💡</span>
+                      <span>종합 평가</span>
+                   </TabsTrigger>
+                </TabsList>
 
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">🎯</span> 진로 역량 상세 분석</h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {getAnnotationsByCategory('career').map((ann, i) => (
-                  <AnnotationBlock key={`career-ann-${i}`} annotation={ann} />
-                ))}
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">🔀</span> 관련 핵심 소재 네트워크</h4>
-              <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden bg-slate-950">
-                <div className="w-full">
-                  <MaterialGraph 
-                    materials={getMaterialsByCategory('career').map(m => ({
-                      ...m,
-                      severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
-                    })) as any[]} 
-                    centerLabel="진로 역량" 
-                    initialHeight={550} 
-                    colorBy="gradeLevel"
-                    onMaterialClick={(idx) => handleMaterialClick('career', idx)}
-                  />
-                </div>
-              </Card>
-              <MaterialsList materials={getMaterialsByCategory('career')} tabId="career" highlightedIndex={selectedMaterialIdx.career} />
-            </div>
+                {/* --- 1. 대학 평가 항목 위주 --- */}
+                <TabsContent value="univ-criteria" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <CategoryQuestionList category="career" questionScores={evaluation.questionScores} />
+                </TabsContent>
 
-            <Separator />
+                {/* --- 2. 소재 위주 --- */}
+                <TabsContent value="materials" className="space-y-8 mt-0 animate-in fade-in duration-300">
+                   <div className="space-y-4">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">🔀</span> 관련 핵심 소재 네트워크</h4>
+                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden bg-slate-950">
+                       <div className="w-full">
+                         <MaterialGraph 
+                           materials={getMaterialsByCategory('career').map(m => ({
+                             ...m,
+                             severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
+                           })) as any[]} 
+                           centerLabel="진로 역량" 
+                           initialHeight={550} 
+                           colorBy="gradeLevel"
+                           onMaterialClick={(idx) => handleMaterialClick('career', idx)}
+                         />
+                       </div>
+                     </Card>
+                     <MaterialsList materials={getMaterialsByCategory('career')} tabId="career" highlightedIndex={selectedMaterialIdx.career} />
+                   </div>
 
-            <CategoryQuestionList category="career" questionScores={evaluation.questionScores} />
+                   <Separator />
+                   
+                   <div className="space-y-4 pt-4">
+                     <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                           <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">📈</span> 진로 역량 발달 서사 (Timeline)</h4>
+                           <p className="text-sm text-gray-500 mt-1">이 평가의 진로 역량 관련 소재들만 모아 3년간의 성장 스토리를 직관적인 플로우차트로 시각화합니다.</p>
+                        </div>
+                        <Button
+                           onClick={() => handleGenerateTimeline('career')}
+                           disabled={isGeneratingTimeline['career']}
+                           className="gap-2 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
+                           variant={timelineData['career'] ? "outline" : "default"}
+                        >
+                           {isGeneratingTimeline['career'] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                           {timelineData['career'] ? "타임라인 새로고침" : "진로 서사 타임라인 생성하기"}
+                        </Button>
+                     </div>
+                     {timelineError['career'] && (
+                         <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                             {timelineError['career']}
+                         </div>
+                     )}
+                     {(timelineData['career'] || isGeneratingTimeline['career']) && (
+                         <CompetencyFlowGraph data={timelineData['career'] || null} category="career" isLoading={isGeneratingTimeline['career']} />
+                     )}
+                   </div>
+                </TabsContent>
+
+                {/* --- 3. 종합 평가 --- */}
+                <TabsContent value="comprehensive" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden">
+                       <div className="text-center mb-6 w-full">
+                         <h4 className="text-lg font-bold text-emerald-800 dark:text-emerald-400">🎯 진로 세부 역량 (총점: {scores.career}점)</h4>
+                         <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
+                       </div>
+                       {(() => {
+                         const subScores = getSubCategoryScores('career', evaluation.questionScores);
+                         const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
+                         if (Object.keys(radarScores).length < 3) {
+                            return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
+                         }
+                         return <RadarChart scores={radarScores} maxScore={7} size={260} />;
+                       })()}
+                     </Card>
+                     
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden">
+                       <div className="text-center mb-4 w-full">
+                         <h4 className="text-lg font-bold text-emerald-800 dark:text-emerald-400">📊 세부 역량 평균 점수</h4>
+                         <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
+                       </div>
+                       <div className="w-full flex-1">
+                          <VerticalScoreBarChart scores={getSubCategoryScores('career', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['career']} />
+                       </div>
+                     </Card>
+                   </div>
+       
+                   <div className="space-y-4 mt-6">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">📝</span> 진로 역량 상세 분석</h4>
+                     <div className="grid gap-4 sm:grid-cols-2">
+                       {getAnnotationsByCategory('career').map((ann, i) => (
+                         <AnnotationBlock key={`career-ann-${i}`} annotation={ann} />
+                       ))}
+                     </div>
+                   </div>
+                </TabsContent>
+             </Tabs>
           </TabsContent>
 
           {/* ======================= 공동체 탭 ======================= */}
           <TabsContent value="community" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden">
-                <div className="text-center mb-6 w-full">
-                  <h4 className="text-lg font-bold text-amber-800 dark:text-amber-400">🎯 공동체 세부 역량 (총점: {scores.community}점)</h4>
-                  <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
-                </div>
-                {(() => {
-                  const subScores = getSubCategoryScores('community', evaluation.questionScores);
-                  const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
-                  if (Object.keys(radarScores).length < 3) {
-                     return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
-                  }
-                  return <RadarChart scores={radarScores} maxScore={7} size={260} />;
-                })()}
-              </Card>
-              
-              <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden">
-                <div className="text-center mb-4 w-full">
-                  <h4 className="text-lg font-bold text-amber-800 dark:text-amber-400">📊 세부 역량 평균 점수</h4>
-                  <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
-                </div>
-                <div className="w-full flex-1">
-                   <VerticalScoreBarChart scores={getSubCategoryScores('community', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['community']} />
-                </div>
-              </Card>
-            </div>
+             <Tabs defaultValue="univ-criteria" className="w-full">
+                <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="materials" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">🧩</span>
+                      <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="comprehensive" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">💡</span>
+                      <span>종합 평가</span>
+                   </TabsTrigger>
+                </TabsList>
 
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-amber-500">🤝</span> 공동체 역량 상세 분석</h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {getAnnotationsByCategory('community').map((ann, i) => (
-                  <AnnotationBlock key={`community-ann-${i}`} annotation={ann} />
-                ))}
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-4">
-              <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-amber-500">🔀</span> 관련 핵심 소재 네트워크</h4>
-              <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden bg-slate-950">
-                <div className="w-full">
-                  <MaterialGraph 
-                    materials={getMaterialsByCategory('community').map(m => ({
-                      ...m,
-                      severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
-                    })) as any[]} 
-                    centerLabel="공동체 역량" 
-                    initialHeight={550} 
-                    colorBy="gradeLevel"
-                    onMaterialClick={(idx) => handleMaterialClick('community', idx)}
-                  />
-                </div>
-              </Card>
-              <MaterialsList materials={getMaterialsByCategory('community')} tabId="community" highlightedIndex={selectedMaterialIdx.community} />
-            </div>
+                {/* --- 1. 대학 평가 항목 위주 --- */}
+                <TabsContent value="univ-criteria" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <CategoryQuestionList category="community" questionScores={evaluation.questionScores} />
+                </TabsContent>
 
-            <Separator />
+                {/* --- 2. 소재 위주 --- */}
+                <TabsContent value="materials" className="space-y-8 mt-0 animate-in fade-in duration-300">
+                   <div className="space-y-4">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-amber-500">🔀</span> 관련 핵심 소재 네트워크</h4>
+                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden bg-slate-950">
+                       <div className="w-full">
+                         <MaterialGraph 
+                           materials={getMaterialsByCategory('community').map(m => ({
+                             ...m,
+                             severity: m.gradeLevel <= 3 ? 'high' : m.gradeLevel <= 5 ? 'medium' : 'low'
+                           })) as any[]} 
+                           centerLabel="공동체 역량" 
+                           initialHeight={550} 
+                           colorBy="gradeLevel"
+                           onMaterialClick={(idx) => handleMaterialClick('community', idx)}
+                         />
+                       </div>
+                     </Card>
+                     <MaterialsList materials={getMaterialsByCategory('community')} tabId="community" highlightedIndex={selectedMaterialIdx.community} />
+                   </div>
 
-            <CategoryQuestionList category="community" questionScores={evaluation.questionScores} />
+                   <Separator />
+                   
+                   <div className="space-y-4 pt-4">
+                     <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                           <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-amber-500">📈</span> 공동체 역량 발달 서사 (Timeline)</h4>
+                           <p className="text-sm text-gray-500 mt-1">이 평가의 공동체 역량 관련 소재들만 모아 3년간의 성장 스토리를 직관적인 플로우차트로 시각화합니다.</p>
+                        </div>
+                        <Button
+                           onClick={() => handleGenerateTimeline('community')}
+                           disabled={isGeneratingTimeline['community']}
+                           className="gap-2 shrink-0 bg-amber-600 hover:bg-amber-700 text-white"
+                           variant={timelineData['community'] ? "outline" : "default"}
+                        >
+                           {isGeneratingTimeline['community'] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                           {timelineData['community'] ? "타임라인 새로고침" : "공동체 서사 타임라인 생성하기"}
+                        </Button>
+                     </div>
+                     {timelineError['community'] && (
+                         <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                             {timelineError['community']}
+                         </div>
+                     )}
+                     {(timelineData['community'] || isGeneratingTimeline['community']) && (
+                         <CompetencyFlowGraph data={timelineData['community'] || null} category="community" isLoading={isGeneratingTimeline['community']} />
+                     )}
+                   </div>
+                </TabsContent>
+
+                {/* --- 3. 종합 평가 --- */}
+                <TabsContent value="comprehensive" className="space-y-6 mt-0 animate-in fade-in duration-300">
+                   <div className="grid gap-6 md:grid-cols-2 min-h-[400px]">
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden">
+                       <div className="text-center mb-6 w-full">
+                         <h4 className="text-lg font-bold text-amber-800 dark:text-amber-400">🎯 공동체 세부 역량 (총점: {scores.community}점)</h4>
+                         <p className="text-sm text-muted-foreground mt-1">중분류별 점수 분포도</p>
+                       </div>
+                       {(() => {
+                         const subScores = getSubCategoryScores('community', evaluation.questionScores);
+                         const radarScores = subScores.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.score }), {} as Record<string, number>);
+                         if (Object.keys(radarScores).length < 3) {
+                            return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">중분류가 3개 미만이라 레이더 차트를<br/>그릴 수 없습니다.</div>
+                         }
+                         return <RadarChart scores={radarScores} maxScore={7} size={260} />;
+                       })()}
+                     </Card>
+                     
+                     <Card className="p-5 flex flex-col items-center justify-center shadow-sm border-amber-200/60 overflow-hidden">
+                       <div className="text-center mb-4 w-full">
+                         <h4 className="text-lg font-bold text-amber-800 dark:text-amber-400">📊 세부 역량 평균 점수</h4>
+                         <p className="text-sm text-muted-foreground mt-1">7점 만점 기준</p>
+                       </div>
+                       <div className="w-full flex-1">
+                          <VerticalScoreBarChart scores={getSubCategoryScores('community', evaluation.questionScores)} colorClass={CATEGORY_BAR_COLORS['community']} />
+                       </div>
+                     </Card>
+                   </div>
+       
+                   <div className="space-y-4 mt-6">
+                     <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-amber-500">📝</span> 공동체 역량 상세 분석</h4>
+                     <div className="grid gap-4 sm:grid-cols-2">
+                       {getAnnotationsByCategory('community').map((ann, i) => (
+                         <AnnotationBlock key={`community-ann-${i}`} annotation={ann} />
+                       ))}
+                     </div>
+                   </div>
+                </TabsContent>
+             </Tabs>
           </TabsContent>
 
           {/* ======================= 기타 탭 ======================= */}

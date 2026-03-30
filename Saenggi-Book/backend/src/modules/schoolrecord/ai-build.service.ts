@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CompetencyCategory, MaterialItem } from './ai-analysis.service';
 
 // ==================== Types ====================
@@ -65,15 +65,15 @@ export interface BuildAnalysisResult {
 @Injectable()
 export class AiBuildService {
     private readonly logger = new Logger(AiBuildService.name);
-    private openai: OpenAI | null = null;
+    private genAI: GoogleGenerativeAI | null = null;
 
     constructor(private readonly configService: ConfigService) {
-        const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+        const apiKey = this.configService.get<string>('GEMINI_API_KEY');
         if (apiKey) {
-            this.openai = new OpenAI({ apiKey });
-            this.logger.log('AI Build: OpenAI client initialized');
+            this.genAI = new GoogleGenerativeAI(apiKey);
+            this.logger.log('AI Build: Gemini client initialized');
         } else {
-            this.logger.warn('AI Build: OPENAI_API_KEY not configured - build analysis disabled');
+            this.logger.warn('AI Build: GEMINI_API_KEY not configured - build analysis disabled');
         }
     }
 
@@ -162,8 +162,8 @@ ${materialsData}
      * 메인 빌드 분석 메서드
      */
     async analyzeBuild(dto: BuildAnalyzeRequestDto): Promise<BuildAnalysisResult> {
-        if (!this.openai) {
-            throw new Error('OpenAI API가 설정되지 않았습니다. OPENAI_API_KEY를 확인해주세요.');
+        if (!this.genAI) {
+            throw new Error('Gemini API가 설정되지 않았습니다. GEMINI_API_KEY를 확인해주세요.');
         }
 
         if (!dto.targetUniversity || !dto.targetMajor) {
@@ -176,24 +176,28 @@ ${materialsData}
 
         const prompt = this.buildPrompt(dto);
 
-        const response = await this.openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 8192,
-            temperature: 0.4,
-            response_format: { type: 'json_object' },
+        const modelInfo = this.genAI.getGenerativeModel({
+            model: 'gemini-2.5-pro',
+            generationConfig: {
+                maxOutputTokens: 16384,
+                temperature: 0.4,
+                responseMimeType: 'application/json',
+            },
         });
 
-        const content = response.choices[0]?.message?.content;
+        const responseInfo = await modelInfo.generateContent(prompt);
+        const content = responseInfo.response.text();
         if (!content) {
             throw new Error('AI 빌드 분석 응답이 비어있습니다.');
         }
 
         let parsed: any;
         try {
-            parsed = JSON.parse(content);
-        } catch {
-            this.logger.error('AI 빌드 분석 응답 JSON 파싱 실패');
+            const cleanedContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+            parsed = JSON.parse(cleanedContent);
+        } catch (err) {
+            this.logger.error('AI 빌드 분석 응답 JSON 파싱 실패: ' + err);
+            this.logger.error('Raw content: ' + content);
             throw new Error('AI 빌드 분석 결과를 파싱할 수 없습니다.');
         }
 

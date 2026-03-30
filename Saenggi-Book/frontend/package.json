@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "deploy:firebase": "npm run build && firebase deploy",
     "deploy:firebase:staging": "npm run build && firebase deploy --only hosting:staging",
-    "deploy:firebase:prod": "npm run build && firebase deploy --only hosting:production",
+    "deploy:firebase:prod": "npm run build && firebase deploy --only hosting:sb",
     "prepare": "husky"
   },
   "dependencies": {

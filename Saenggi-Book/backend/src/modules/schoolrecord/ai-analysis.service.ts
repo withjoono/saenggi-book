@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // ==================== Types ====================
 
@@ -48,15 +48,15 @@ export interface AnalyzeRequestDto {
 @Injectable()
 export class AiAnalysisService {
     private readonly logger = new Logger(AiAnalysisService.name);
-    private openai: OpenAI | null = null;
+    private genAI: GoogleGenerativeAI | null = null;
 
     constructor(private readonly configService: ConfigService) {
-        const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+        const apiKey = this.configService.get<string>('GEMINI_API_KEY');
         if (apiKey) {
-            this.openai = new OpenAI({ apiKey });
-            this.logger.log('AI Analysis: OpenAI client initialized');
+            this.genAI = new GoogleGenerativeAI(apiKey);
+            this.logger.log('AI Analysis: Gemini client initialized');
         } else {
-            this.logger.warn('AI Analysis: OPENAI_API_KEY not configured - analysis disabled');
+            this.logger.warn('AI Analysis: GEMINI_API_KEY not configured - analysis disabled');
         }
     }
 
@@ -115,14 +115,15 @@ ${inputData}
 }
 
 ## 주의사항
-1. 소재는 5~15개 사이로 추출합니다.
+1. 학생의 우수성이 가장 돋보이는 핵심 소재를 우선적으로 선별하여, **총 15~20개 내외**로 충분히 추출하세요.
+   - 단순 나열식 활동보다는 깊이 있는 탐구, 우수한 평가, 탁월한 성취가 드러나는 소재를 최우선으로 선별합니다.
 2. sourceIndices는 아래 원문 인덱스 목록에서의 번호입니다.
 3. 하나의 소재에 여러 원문이 근거가 될 수 있습니다.
 4. severity는 입시에서 어필 강도를 의미합니다:
-   - high: 독보적이고 차별화된 활동/성과
+   - high: 독보적이고 차별화된 활동/성과 (우선 추출 대상)
    - medium: 꾸준하고 의미 있는 활동
    - low: 일반적이거나 보편적인 활동
-5. 각 카테고리에 최소 1개 이상의 소재가 있어야 합니다.
+5. 각 카테고리에 최소 2개 이상의 소재가 포함되도록 균형있게 추출하세요.
 
 ## 원문 인덱스 목록
 ${this.buildSourceIndex(dto)}`;
@@ -191,8 +192,8 @@ ${this.buildSourceIndex(dto)}`;
      * 메인 분석 메서드
      */
     async analyze(dto: AnalyzeRequestDto): Promise<SchoolRecordAnalysis> {
-        if (!this.openai) {
-            throw new Error('OpenAI API가 설정되지 않았습니다. OPENAI_API_KEY를 확인해주세요.');
+        if (!this.genAI) {
+            throw new Error('Gemini API가 설정되지 않았습니다. GEMINI_API_KEY를 확인해주세요.');
         }
 
         const totalTexts = dto.subjectTexts.length + dto.creativeTexts.length + dto.behaviorTexts.length;
@@ -206,24 +207,28 @@ ${this.buildSourceIndex(dto)}`;
 
         const prompt = this.buildAnalysisPrompt(dto);
 
-        const response = await this.openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 4096,
-            temperature: 0.3,
-            response_format: { type: 'json_object' },
+        const modelInfo = this.genAI.getGenerativeModel({
+            model: 'gemini-2.5-pro',
+            generationConfig: {
+                maxOutputTokens: 16384,
+                temperature: 0.3,
+                responseMimeType: 'application/json',
+            },
         });
 
-        const content = response.choices[0]?.message?.content;
+        const responseInfo = await modelInfo.generateContent(prompt);
+        const content = responseInfo.response.text();
         if (!content) {
             throw new Error('AI 분석 응답이 비어있습니다.');
         }
 
         let parsed: any;
         try {
-            parsed = JSON.parse(content);
-        } catch {
-            this.logger.error('AI 응답 JSON 파싱 실패');
+            const cleanedContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+            parsed = JSON.parse(cleanedContent);
+        } catch (err) {
+            this.logger.error('AI 응답 JSON 파싱 실패: ' + err);
+            this.logger.error('Raw content: ' + content);
             throw new Error('AI 분석 결과를 파싱할 수 없습니다.');
         }
 

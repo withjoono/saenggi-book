@@ -1,0 +1,30 @@
+
+> ts-front@0.0.0 build
+> vite build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+x Build failed in 10.78s
+[32m??[39m 9861 modules transformed.
+error during build:
+src/routes/sb/_layout.evaluation.lazy.tsx (42:9): "GradeGraph" is not exported by "src/components/score-visualizations/eval-graphs.tsx", imported by "src/routes/sb/_layout.evaluation.lazy.tsx".
+file: E:/Dev/github/Saenggi-Book/frontend/src/routes/sb/_layout.evaluation.lazy.tsx:42:9
+
+40: ];
+41: 
+42: import { GradeGraph, RadarChart } from "@/components/score-visualizations/eval-graphs";
+             ^
+43: 
+44: // ==================== 硫붿씤 ?섏씠吏 ====================
+
+    at getRollupError (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at Module.error (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:16939:16)
+    at Module.traceVariable (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17391:29)
+    at ModuleScope.findVariable (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:15061:39)
+    at FunctionScope.findVariable (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5642:38)
+    at FunctionBodyScope.findVariable (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5642:38)
+    at Identifier.bind (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5413:40)
+    at CallExpression.bind (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:2800:28)
+    at CallExpression.bind (file:///E:/Dev/github/Saenggi-Book/frontend/node_modules/rollup/dist/es/shared/node-entry.js:12108:15)

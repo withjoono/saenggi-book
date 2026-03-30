@@ -9,7 +9,7 @@ import { useGetCurrentUser } from "@/stores/server/features/me/queries";
 import { useGetAiEvaluationHistory } from "@/stores/server/features/ai-evaluation/queries";
 import type { IAiEvaluation } from "@/stores/server/features/ai-evaluation/interfaces";
 import { IconSparkles } from "@tabler/icons-react";
-import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,8 @@ export const Route = createLazyFileRoute("/sb/_layout/evaluation-list")({
 function AiEvaluationList() {
   const { data: currentUser } = useGetCurrentUser();
   const { data: evaluationList, isLoading } = useGetAiEvaluationHistory();
+  const location = useLocation();
+  const currentTab = new URLSearchParams(location.search).get("tab") || "overview";
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -41,7 +43,15 @@ function AiEvaluationList() {
         <p className="text-sm text-muted-foreground">
           AI 사정관이 분석한 생기부 평가 결과 목록입니다.
         </p>
-        <p className="text-sm text-muted-foreground">
+        {currentTab !== "overview" && (
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
+            <span>📌 현재 선택된 핵심 분석 영역: </span>
+            <span className="font-bold">
+              {currentTab === "academic" ? "학업 역량" : currentTab === "career" ? "진로 역량" : currentTab === "community" ? "공동체 역량" : currentTab === "other" ? "기타 역량" : "종합 평가"}
+            </span>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground mt-2">
           평가 결과를 참고하여{" "}
           <Link className="text-blue-500" to="/sb/comprehensive">
             학종
@@ -84,7 +94,7 @@ function AiEvaluationList() {
           </div>
 
           {/* 선택된 평가 상세 */}
-          {selectedItem && <AiEvaluationDetail evaluation={selectedItem} />}
+          {selectedItem && <AiEvaluationDetail evaluation={selectedItem} defaultTab={currentTab} />}
         </div>
       )}
     </div>

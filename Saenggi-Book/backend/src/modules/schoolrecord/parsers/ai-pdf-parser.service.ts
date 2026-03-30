@@ -6,8 +6,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import OpenAI from 'openai';
 import { ConfigService } from '@nestjs/config';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const { PDFParse } = require('pdf-parse');
 
@@ -258,15 +258,15 @@ interface ParsedAcademicRecords {
 @Injectable()
 export class AiPdfParserService {
   private readonly logger = new Logger(AiPdfParserService.name);
-  private openai: OpenAI;
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
-      this.openai = new OpenAI({ apiKey });
-      this.logger.log('OpenAI client initialized');
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.logger.log('Gemini client initialized');
     } else {
-      this.logger.warn('OPENAI_API_KEY not configured - AI parsing disabled');
+      this.logger.warn('GEMINI_API_KEY not configured - AI parsing disabled');
     }
   }
 
@@ -407,31 +407,35 @@ export class AiPdfParserService {
     year: string;
     content: Record<string, { '1학기': string; '2학기': string }>;
   }): Promise<Partial<ParsedAcademicRecords> | null> {
-    if (!this.openai) {
-      throw new Error('OpenAI API가 설정되지 않았습니다. OPENAI_API_KEY를 확인해주세요.');
+    if (!this.genAI) {
+      throw new Error('Gemini API가 설정되지 않았습니다. GEMINI_API_KEY를 확인해주세요.');
     }
 
     const prompt = this.buildPrompt(chunk.year, chunk.content);
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4096,
-        temperature: 0,
-        response_format: { type: 'json_object' },
+      const modelInfo = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-pro',
+        generationConfig: {
+          maxOutputTokens: 16384,
+          temperature: 0,
+          responseMimeType: 'application/json',
+        },
       });
 
-      const content = response.choices[0]?.message?.content;
+      const responseInfo = await modelInfo.generateContent(prompt);
+      const content = responseInfo.response.text();
       if (!content) {
         this.logger.warn(`${chunk.year} 응답 없음`);
         return null;
       }
 
       try {
-        return JSON.parse(content);
+        const cleanedContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanedContent);
       } catch (je) {
         this.logger.error(`${chunk.year} JSON 파싱 오류: ${je}`);
+        this.logger.error(`Raw content: ${content}`);
         return null;
       }
     } catch (error) {
