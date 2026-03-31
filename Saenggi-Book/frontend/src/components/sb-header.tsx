@@ -170,22 +170,7 @@ export const SbHeader = () => {
                     >
                       생기부 입력
                     </Link>
-                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-gray-400">교과</div>
-                    <Link
-                      to="#"
-                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-400 hover:bg-gray-100")}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      교과 (준비중)
-                    </Link>
-                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-olive-400">비교과</div>
-                    <Link
-                      to="/sb/attendance"
-                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      출결
-                    </Link>
+                    <div className="px-1 py-2 text-sm font-medium text-gray-700">입력 확인</div>
                     <Link
                       to="/sb/setuk"
                       className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
@@ -199,6 +184,13 @@ export const SbHeader = () => {
                       onClick={() => setIsOpen(false)}
                     >
                       창체 및 행특
+                    </Link>
+                    <Link
+                      to="/sb/attendance"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      출결
                     </Link>
                   </div>
 
@@ -216,7 +208,7 @@ export const SbHeader = () => {
                     >
                       교과 분석
                     </Link>
-                    <div className="px-2 py-1 mt-1 text-xs font-semibold text-olive-400">비교과 분석</div>
+                    <div className="px-1 py-2 text-sm font-medium text-gray-700">비교과 분석</div>
                     <Link
                       to="/sb/evaluation-list?tab=academic"
                       className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
@@ -247,7 +239,7 @@ export const SbHeader = () => {
                     </Link>
                     <Link
                       to="/sb/request"
-                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 mt-2 text-emerald-600 font-bold hover:bg-emerald-50")}
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start pl-4 text-sm text-gray-700 hover:bg-gray-100")}
                       onClick={() => setIsOpen(false)}
                     >
                       종합 분석
@@ -442,19 +434,10 @@ export const SbHeader = () => {
                           생기부 입력
                         </Link>
                         
-                        <div className="mt-2 px-3 flex items-center gap-2">
-                           <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
-                           <span className="text-xs font-bold text-gray-500">교과</span>
-                        </div>
-                        <Link to="#" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-400">교과 (준비중)</Link>
-
-                        <div className="mt-2 px-3 flex items-center gap-2">
-                           <div className="w-1.5 h-1.5 rounded-full bg-olive-500"></div>
-                           <span className="text-xs font-bold text-olive-600">비교과</span>
-                        </div>
-                        <Link to="/sb/attendance" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">출결</Link>
+                        <div className="mt-2 px-3 py-2 font-medium text-gray-900">입력 확인</div>
                         <Link to="/sb/setuk" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">세특</Link>
                         <Link to="/sb/creative-activity" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">창체 및 행특</Link>
+                        <Link to="/sb/attendance" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">출결</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>
@@ -474,16 +457,12 @@ export const SbHeader = () => {
                       <div className="flex flex-col gap-1">
                         <Link to="/sb/performance" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">교과 분석</Link>
                         
-                        <div className="mt-2 px-3 flex items-center gap-2">
-                           <div className="w-1.5 h-1.5 rounded-full bg-olive-500"></div>
-                           <span className="text-xs font-bold text-olive-600">비교과 분석</span>
-                        </div>
+                        <div className="mt-2 px-3 py-2 font-medium text-gray-900">비교과 분석</div>
                         <Link to="/sb/evaluation-list?tab=academic" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">학업 역량</Link>
                         <Link to="/sb/evaluation-list?tab=career" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">진로 역량</Link>
                         <Link to="/sb/evaluation-list?tab=community" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">공동체 역량</Link>
                         <Link to="/sb/evaluation-list?tab=other" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">기타</Link>
-                        
-                        <Link to="/sb/request" className="flex items-center rounded-lg px-3 py-2 mt-2 -ml-1 text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100">종합 분석</Link>
+                        <Link to="/sb/request" className="flex items-center rounded-lg px-3 py-1.5 ml-4 hover:bg-accent text-sm text-gray-600">종합 분석</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>

@@ -100,11 +100,14 @@ function AnnotationBlock({ annotation }: { annotation: IAiEvaluationAnnotation }
         </div>
       )}
       {annotation.advice?.length > 0 && (
-        <div className="mt-2 rounded-md bg-blue-50 p-3 dark:bg-blue-950/50">
-          <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">💡 조언</p>
-          <ul className="mt-1 ml-4 list-disc text-sm text-blue-900 dark:text-blue-100">
+        <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/80 p-5 dark:border-blue-900/50 dark:bg-blue-950/40 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-bl-full opacity-50 dark:bg-blue-900/30" />
+          <p className="text-sm font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2 mb-3 z-10 relative">
+            <span className="text-xl">🚀</span> 다음 학기 코칭 조언 (Next Step)
+          </p>
+          <ul className="ml-4 list-disc space-y-2 text-sm text-blue-950 dark:text-blue-100 font-medium z-10 relative">
             {annotation.advice.map((a, i) => (
-              <li key={i}>{a}</li>
+              <li key={i} className="leading-relaxed">{a}</li>
             ))}
           </ul>
         </div>
@@ -261,16 +264,21 @@ function MaterialsList({
           >
           <div className="flex items-start justify-between">
             <p className="font-semibold text-sm mr-2">{m.title}</p>
-            <Badge
-              className="shrink-0 font-medium text-white border-0"
-              style={{ backgroundColor: GRADE_LEVEL_COLORS[m.gradeLevel] || '#94a3b8' }}
-            >
-              {GRADE_LETTER_MAPPING[m.gradeLevel]}
-            </Badge>
+            <div className="flex gap-2">
+              <Badge className="shrink-0 font-medium text-white border-0" style={{ backgroundColor: GRADE_LEVEL_COLORS[m.gradeLevel] || '#94a3b8' }}>
+                {GRADE_LETTER_MAPPING[m.gradeLevel]}
+              </Badge>
+              <Badge variant="outline" className="shrink-0 font-semibold border-gray-300 text-gray-600">
+                {m.gradeLevel <= 2 ? '🌟 심화 소재' : m.gradeLevel <= 4 ? '📈 주도적 탐구' : '📝 일반 활동'}
+              </Badge>
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">{m.summary}</p>
           {m.relatedKeywords?.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
+            <div className="flex flex-wrap gap-1 pt-1 items-center">
+              <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700 border border-blue-200 font-bold dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800">
+                🎯 [{CATEGORY_LABELS[m.category] || '핵심역량'}] 어필
+              </span>
               {m.relatedKeywords.map((kw, ki) => (
                 <span
                   key={ki}
@@ -288,27 +296,37 @@ function MaterialsList({
   );
 }
 
-function NavigationCard({ value, title, icon, score, subtitle, colorClass }: any) {
+function NavigationCard({ value, title, icon, score, colorClass, isActive, isFirst, isLast, zIndex }: any) {
   return (
     <TabsTrigger 
        value={value}
-       className={`group relative flex-1 min-w-[130px] sm:min-w-[140px] snap-center flex flex-col items-start justify-between p-4 border border-slate-200 dark:border-slate-800 rounded-3xl bg-white/60 backdrop-blur-md dark:bg-slate-900/60 shadow-sm transition-all duration-300 overflow-hidden data-[state=active]:border-transparent data-[state=active]:shadow-md data-[state=active]:scale-[1.02] data-[state=active]:bg-gradient-to-br outline-none ${colorClass.ring} ${colorClass.bgFill}`}
+       className={`relative flex flex-col items-center justify-center gap-1 py-3 md:py-4 px-6 md:px-8 cursor-pointer font-bold transition-all duration-300 outline-none select-none border-none whitespace-nowrap min-w-[100px] md:min-w-[140px] ${
+         isActive 
+           ? 'text-white shadow-xl shadow-slate-300/50 scale-[1.03] z-[100]' 
+           : 'bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-800 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:bg-slate-800 z-10'
+       }`}
+       style={{
+         background: isActive ? colorClass.hex : undefined,
+         clipPath: isFirst 
+           ? 'polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)'
+           : isLast
+           ? 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%)'
+           : 'polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%, 16px 50%)',
+         marginLeft: isFirst ? '0px' : '-16px',
+         zIndex: isActive ? 100 : zIndex,
+         borderTopLeftRadius: isFirst ? '12px' : '0',
+         borderBottomLeftRadius: isFirst ? '12px' : '0',
+         borderTopRightRadius: isLast ? '12px' : '0',
+         borderBottomRightRadius: isLast ? '12px' : '0'
+       }}
     >
-       <span className={`absolute top-0 right-0 w-28 h-28 rounded-full blur-[28px] -mr-12 -mt-12 transition-opacity opacity-0 group-data-[state=active]:opacity-100 duration-500 ${colorClass.glowbg}`} />
-       
-       <div className="flex items-center gap-2 mb-4 z-10 w-full">
-          <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-slate-500 transition-colors group-data-[state=active]:text-white shadow-sm ${colorClass.iconBg}`}>
-            <span className="text-sm">{icon}</span>
-          </div>
-          <span className={`font-bold text-[13px] md:text-sm text-slate-700 dark:text-slate-300 transition-colors ${colorClass.text}`}>{title}</span>
+       <div className={`flex items-center gap-1 md:gap-2 ${isActive ? 'opacity-100' : 'opacity-80'}`}>
+          <span className="text-[14px] md:text-xl drop-shadow-sm">{icon}</span>
+          <span className={`text-[12px] md:text-[15px] ${isActive ? '' : 'font-semibold'}`}>{title}</span>
        </div>
-       
-       <div className="z-10 flex flex-col items-start w-full">
-          <span className="text-[11px] text-muted-foreground font-medium mb-0.5">{subtitle}</span>
-          <span className={`text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 group-data-[state=active]:bg-gradient-to-r group-data-[state=active]:bg-clip-text group-data-[state=active]:text-transparent transition-all ${colorClass.gradientText}`}>
-            {score}<span className="text-sm font-semibold text-muted-foreground ml-0.5 tracking-normal group-data-[state=active]:text-current opacity-70">점</span>
-          </span>
-       </div>
+       <span className={`text-[14px] md:text-2xl font-black mt-1 ${isActive ? 'bg-white/20 px-1.5 md:px-2 py-0.5 rounded backdrop-blur-sm -ml-1' : ''}`}>
+         {score}<span className="text-[10px] md:text-sm ml-0.5 opacity-90">점</span>
+       </span>
     </TabsTrigger>
   );
 }
@@ -437,72 +455,27 @@ export function AiEvaluationDetail({
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-full md:w-[280px] h-auto p-0 bg-transparent gap-3 pb-4">
-          {activeTab === "overview" && (
-            <NavigationCard 
-              value="overview" title="종합역량" icon="👑" score={totalScore} subtitle="총점"
-              colorClass={{
-                ring: "border-primary/30 ring-2 ring-primary/20",
-                text: "text-primary dark:text-primary",
-                gradientText: "from-primary to-indigo-500",
-                iconBg: "bg-primary text-white",
-                glowbg: "bg-primary/20 opacity-100",
-                bgFill: "from-primary/10 to-primary/5"
-              }}
-            />
-          )}
-          {activeTab === "academic" && (
-            <NavigationCard 
-              value="academic" title="학업역량" icon="📚" score={scores.academic} subtitle="세부 역량 점수"
-              colorClass={{
-                ring: "border-blue-500/30 ring-2 ring-blue-500/20",
-                text: "text-blue-600 dark:text-blue-400",
-                gradientText: "from-blue-600 to-blue-400",
-                iconBg: "bg-blue-500 text-white",
-                glowbg: "bg-blue-500/20 opacity-100",
-                bgFill: "from-blue-500/10 to-blue-500/5"
-              }}
-            />
-          )}
-          {activeTab === "career" && (
-            <NavigationCard 
-              value="career" title="진로역량" icon="🎯" score={scores.career} subtitle="세부 역량 점수"
-              colorClass={{
-                ring: "border-emerald-500/30 ring-2 ring-emerald-500/20",
-                text: "text-emerald-600 dark:text-emerald-400",
-                gradientText: "from-emerald-600 to-emerald-400",
-                iconBg: "bg-emerald-500 text-white",
-                glowbg: "bg-emerald-500/20 opacity-100",
-                bgFill: "from-emerald-500/10 to-emerald-500/5"
-              }}
-            />
-          )}
-          {activeTab === "community" && (
-            <NavigationCard 
-              value="community" title="공동체역량" icon="🤝" score={scores.community} subtitle="세부 역량 점수"
-              colorClass={{
-                ring: "border-amber-500/30 ring-2 ring-amber-500/20",
-                text: "text-amber-600 dark:text-amber-400",
-                gradientText: "from-amber-600 to-amber-500",
-                iconBg: "bg-amber-500 text-white",
-                glowbg: "bg-amber-500/20 opacity-100",
-                bgFill: "from-amber-500/10 to-amber-500/5"
-              }}
-            />
-          )}
-          {activeTab === "other" && (
-            <NavigationCard 
-              value="other" title="기타역량" icon="✨" score={scores.other} subtitle="세부 역량 점수"
-              colorClass={{
-                ring: "border-purple-500/30 ring-2 ring-purple-500/20",
-                text: "text-purple-600 dark:text-purple-400",
-                gradientText: "from-purple-600 to-purple-400",
-                iconBg: "bg-purple-500 text-white",
-                glowbg: "bg-purple-500/20 opacity-100",
-                bgFill: "from-purple-500/10 to-purple-500/5"
-              }}
-            />
-          )}
+        <TabsList className="relative flex w-full max-w-4xl mx-auto overflow-x-auto h-auto p-0 bg-transparent mb-6 rounded-xl scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] drop-shadow-sm pb-8 pt-4 border-none">
+          <NavigationCard 
+            value="overview" title="종합" icon="👑" score={totalScore} isFirst={true} isLast={false} zIndex={50} isActive={activeTab === 'overview'}
+            colorClass={{ hex: '#4f46e5' }}
+          />
+          <NavigationCard 
+            value="academic" title="학업" icon="📚" score={scores.academic} isFirst={false} isLast={false} zIndex={40} isActive={activeTab === 'academic'}
+            colorClass={{ hex: '#3b82f6' }}
+          />
+          <NavigationCard 
+            value="career" title="진로" icon="🎯" score={scores.career} isFirst={false} isLast={false} zIndex={30} isActive={activeTab === 'career'}
+            colorClass={{ hex: '#10b981' }}
+          />
+          <NavigationCard 
+            value="community" title="공동체" icon="🤝" score={scores.community} isFirst={false} isLast={false} zIndex={20} isActive={activeTab === 'community'}
+            colorClass={{ hex: '#f59e0b' }}
+          />
+          <NavigationCard 
+            value="other" title="기타" icon="✨" score={scores.other} isFirst={false} isLast={true} zIndex={10} isActive={activeTab === 'other'}
+            colorClass={{ hex: '#8b5cf6' }}
+          />
         </TabsList>
 
         <div className="mt-6">
@@ -549,7 +522,7 @@ export function AiEvaluationDetail({
             {(evaluation.strengths?.length > 0 || evaluation.weaknesses?.length > 0 || evaluation.advice?.length > 0) && (
               <div className="space-y-4">
                 <h4 className="text-lg font-bold">📝 AI 사정관 종합 의견</h4>
-                <div className="grid gap-4 sm:grid-cols-3 align-top items-start">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 align-top items-start">
                   {evaluation.strengths?.length > 0 && (
                     <Card className="space-y-3 p-5 border-emerald-100 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20 shadow-sm h-full">
                       <p className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
@@ -575,13 +548,14 @@ export function AiEvaluationDetail({
                     </Card>
                   )}
                   {evaluation.advice?.length > 0 && (
-                    <Card className="space-y-3 p-5 border-blue-100 bg-blue-50/50 dark:border-blue-900/50 dark:bg-blue-950/20 shadow-sm h-full">
-                      <p className="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                        <span className="text-lg">💡</span> 개선 조언
+                    <Card className="space-y-4 p-6 border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/60 shadow-md sm:col-span-2 md:col-span-1 lg:col-span-3 xl:col-span-3 relative overflow-hidden ring-1 ring-blue-500/20">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 rounded-bl-full opacity-30 dark:bg-blue-800/20 pointer-events-none" />
+                      <p className="font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2 text-lg border-b border-blue-200/50 pb-3 z-10 relative">
+                        <span className="text-2xl">🚀</span> 다음 학기를 위한 생기부 빌드업 코칭 (Next Step)
                       </p>
-                      <ul className="ml-4 list-disc space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
+                      <ul className="ml-5 list-disc space-y-2.5 text-base text-blue-950 dark:text-blue-100 font-medium z-10 relative">
                         {evaluation.advice.map((a, i) => (
-                          <li key={i} className="leading-relaxed">{a}</li>
+                          <li key={i} className="leading-relaxed tracking-wide">{a}</li>
                         ))}
                       </ul>
                     </Card>
