@@ -4,6 +4,7 @@ import { RequireLoginMessage } from "@/components/require-login-message";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDateYYYYMMDD } from "@/lib/utils/common/date";
 import { useGetCurrentUser } from "@/stores/server/features/me/queries";
 import { useGetAiEvaluationHistory } from "@/stores/server/features/ai-evaluation/queries";
@@ -42,28 +43,48 @@ function AiEvaluationList() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">AI 생기부 평가 내역</h3>
-        <p className="text-sm text-muted-foreground">
-          AI 사정관이 분석한 생기부 평가 결과 목록입니다.
-        </p>
-        {currentTab !== "overview" && (
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 border border-blue-200">
-            <span>📌 현재 선택된 핵심 분석 영역: </span>
-            <span className="font-bold">
-              {currentTab === "academic" ? "학업 역량" : currentTab === "career" ? "진로 역량" : currentTab === "community" ? "공동체 역량" : currentTab === "other" ? "기타 역량" : "종합 평가"}
-            </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+        <div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            생기부 빌드업 분석 리포트
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            평가 결과를 참고하여 <Link className="text-blue-500 font-semibold" to="/sb/comprehensive">학종</Link> 탭에서 나에게 맞는 대학을 탐색해보세요.
+          </p>
+        </div>
+        
+        {currentUser && filteredList && filteredList.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-500 whitespace-nowrap hidden sm:inline-block">이전 기록:</span>
+            <Select value={selectedId?.toString()} onValueChange={(val) => setSelectedId(Number(val))}>
+              <SelectTrigger className="w-[200px] md:w-[240px] h-10 text-sm bg-white shadow-sm border-slate-200">
+                <SelectValue placeholder="평가 내역 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {filteredList.map((evaluation) => {
+                  const isComp = evaluation.evalType === "comprehensive";
+                  const target = evaluation.targetSeries?.split(">")?.pop() || "전체";
+                  const dateStr = formatDateYYYYMMDD(evaluation.createdAt);
+                  return (
+                    <SelectItem key={evaluation.id} value={evaluation.id.toString()}>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded border", isComp ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-50 text-blue-600 border-blue-200")}>
+                            {isComp ? "종합" : "일반"}
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">{target} 관점</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground ml-3">{dateStr}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
         )}
-        <p className="text-sm text-muted-foreground mt-2">
-          평가 결과를 참고하여{" "}
-          <Link className="text-blue-500" to="/sb/comprehensive">
-            학종
-          </Link>{" "}
-          탭에서 나에게 맞는 대학을 탐색해보세요!
-        </p>
       </div>
-      <Separator />
+      <Separator className="my-2" />
       {!currentUser ? (
         <RequireLoginMessage />
       ) : isLoading ? (
@@ -84,65 +105,10 @@ function AiEvaluationList() {
           </div>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {/* 평가 목록 (가로 스크롤) */}
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {filteredList.map((evaluation) => (
-              <EvaluationTab
-                key={evaluation.id}
-                evaluation={evaluation}
-                isSelected={evaluation.id === selectedId}
-                onClick={() => setSelectedId(evaluation.id)}
-              />
-            ))}
-          </div>
-
-          {/* 선택된 평가 상세 */}
+        <div className="w-full">
           {selectedItem && <AiEvaluationDetail evaluation={selectedItem} defaultTab={currentTab} />}
         </div>
       )}
     </div>
-  );
-}
-
-function EvaluationTab({
-  evaluation,
-  isSelected,
-  onClick,
-}: {
-  evaluation: IAiEvaluation;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  const isComprehensive = evaluation.evalType === "comprehensive";
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex shrink-0 flex-col items-center justify-center gap-1 rounded-lg border px-4 py-3 text-center transition-all hover:border-primary/50 hover:bg-primary/5",
-        isSelected
-          ? "border-primary bg-primary/10 shadow-sm"
-          : "border-gray-200 bg-white",
-      )}
-    >
-      <Badge
-        variant="outline"
-        className={cn(
-          "text-[10px]",
-          isComprehensive
-            ? "border-primary text-primary"
-            : "border-blue-500 text-blue-500",
-        )}
-      >
-        {isComprehensive ? "종합 분석" : "분석 기록"}
-      </Badge>
-      <p className="text-sm font-bold mt-1 text-slate-800">
-        {evaluation.targetSeries?.split(">")?.pop() || "전체"} 관점
-      </p>
-      <p className="text-[11px] font-medium text-muted-foreground mt-0.5">
-        {formatDateYYYYMMDD(evaluation.createdAt)}
-      </p>
-    </button>
   );
 }

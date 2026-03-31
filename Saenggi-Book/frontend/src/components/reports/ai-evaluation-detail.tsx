@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadarChart } from "@/components/score-visualizations/eval-graphs";
 import MaterialGraph from "@/components/graph/MaterialGraph";
 import { EVAL_QUESTIONS, SUB_CATEGORY_GROUPS } from "@/constants/evaluation-questions";
@@ -383,6 +384,16 @@ export function AiEvaluationDetail({
       }
   };
 
+  // 탭 이동 시 타임라인 자동 로드 (캐싱되어 있다면 즉시 로딩됨)
+  useEffect(() => {
+    if (['academic', 'career', 'community'].includes(activeTab)) {
+      if (!timelineData[activeTab] && !isGeneratingTimeline[activeTab] && !timelineError[activeTab]) {
+        // 백그라운드에서 타임라인 생성 혹은 캐시 로딩 수행
+        handleGenerateTimeline(activeTab as 'academic' | 'career' | 'community');
+      }
+    }
+  }, [activeTab, timelineData, isGeneratingTimeline, timelineError]);
+
   const handleMaterialClick = (tab: string, idx: number) => {
     setSelectedMaterialIdx(prev => ({ ...prev, [tab]: prev[tab] === idx ? null : idx }));
     if (tab !== 'overview') {
@@ -413,44 +424,55 @@ export function AiEvaluationDetail({
   return (
     <div className="space-y-8 pb-20">
       {/* Header */}
-      <div className="flex flex-col items-center gap-2 text-center bg-gray-50/50 py-6 rounded-xl border border-gray-100 dark:bg-slate-900/20 dark:border-slate-800">
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AI 생기부 평가 결과</h3>
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-          <Badge variant="outline" className="px-3 py-1 font-medium bg-white dark:bg-slate-950">
-            {evaluation.grade}학년
-            {evaluation.evalType === "semester" && evaluation.semester
-              ? ` ${evaluation.semester}학기`
-              : " 종합"}
-          </Badge>
-          {evaluation.targetSeries && (
-            <Badge variant="secondary" className="px-3 py-1 font-medium bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
-              목표: {evaluation.targetSeries.replace(/>/g, " > ")}
+      <div className="flex flex-col items-center gap-4 text-center bg-transparent py-4 relative">
+        <div className="flex w-full items-center justify-between px-2 sm:px-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="px-3 py-1 font-medium bg-blue-50/50 dark:bg-slate-900 border-indigo-100 text-indigo-700 shadow-sm">
+              {evaluation.grade}학년
+              {evaluation.evalType === "semester" && evaluation.semester
+                ? ` ${evaluation.semester}학기`
+                : " 종합"}
             </Badge>
-          )}
-        </div>
-        <p className="mt-4 max-w-2xl text-sm font-medium text-slate-700 dark:text-slate-300 px-4">
-          {evaluation.summary}
-        </p>
-
-        <details className="mt-5 w-full max-w-2xl text-left bg-white/80 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group">
-          <summary className="px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer list-none flex items-center justify-between hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors">
-            <span className="flex items-center gap-2">
-              <span className="text-primary text-base">ℹ️</span> 7단계 평가 척도 안내
-            </span>
-            <span className="text-slate-400 group-open:rotate-180 transition-transform duration-300">▼</span>
-          </summary>
-          <div className="px-5 pb-5 pt-2 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-950/40">
-            <ul className="space-y-3 text-[13px] text-slate-600 dark:text-slate-400 mt-2">
-              <li className="flex gap-3"><Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 min-w-[56px] justify-center">A+ (탁월)</Badge> <span className="flex-1 pt-0.5">교육과정을 초월한 자발적 심화 탐구 및 독창적 결과물 산출.</span></li>
-              <li className="flex gap-3"><Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border-blue-500/20 min-w-[56px] justify-center">A (우수)</Badge> <span className="flex-1 pt-0.5">구체적 근거가 있는 주도적 학습 및 전공 관련 심화 성취.</span></li>
-              <li className="flex gap-3"><Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20 min-w-[56px] justify-center">B+ (양호)</Badge> <span className="flex-1 pt-0.5">성취 기준의 성실한 이수 및 안정적 수준의 탐구 활동.</span></li>
-              <li className="flex gap-3"><Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20 min-w-[56px] justify-center">B (보통)</Badge> <span className="flex-1 pt-0.5">주어진 과제의 단순 수행 및 수동적 참여 중심 서술.</span></li>
-              <li className="flex gap-3"><Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 border-orange-500/20 min-w-[56px] justify-center">C+ (미흡)</Badge> <span className="flex-1 pt-0.5">구체성이 결여된 나열식 기록 및 미흡한 역량 수준.</span></li>
-              <li className="flex gap-3"><Badge className="bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-500/20 border-slate-500/20 min-w-[56px] justify-center">C (부족)</Badge> <span className="flex-1 pt-0.5">평가 불가 수준의 기록 부실 및 근거 미비.</span></li>
-              <li className="flex gap-3"><Badge className="bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 border-red-500/20 min-w-[56px] justify-center">D (부적격)</Badge> <span className="flex-1 pt-0.5">심각한 결격 사유 존재.</span></li>
-            </ul>
+            {evaluation.targetSeries && (
+              <Badge variant="secondary" className="px-3 py-1 font-medium bg-white text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 shadow-sm">
+                방향: {evaluation.targetSeries.split(" > ").pop()}
+              </Badge>
+            )}
           </div>
-        </details>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 bg-white dark:bg-slate-800 hover:bg-slate-50 rounded-full transition-colors border border-slate-200 dark:border-slate-700 shadow-sm">
+                <span className="text-indigo-500 text-sm">ℹ️</span> <span className="hidden sm:inline">7단계 평가 척도 안내</span><span className="sm:hidden">안내</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[320px] sm:w-[380px] p-0 overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-[200]">
+              <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">7단계 평가 척도 안내</h4>
+              </div>
+              <div className="p-4 max-h-[300px] overflow-y-auto">
+                <ul className="space-y-3 text-[13px] text-slate-600 dark:text-slate-400">
+                  <li className="flex gap-3"><Badge className="bg-primary/10 text-primary border-primary/20 min-w-[56px] justify-center">A+ (탁월)</Badge> <span className="flex-1 pt-0.5">교육과정을 초월한 자발적 심화 탐구 및 독창적 결과물 산출.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 min-w-[56px] justify-center">A (우수)</Badge> <span className="flex-1 pt-0.5">구체적 근거가 있는 주도적 학습 및 전공 관련 심화 성취.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 min-w-[56px] justify-center">B+ (양호)</Badge> <span className="flex-1 pt-0.5">교과 지식의 주도적 확장 및 의미 있는 활동 참여.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 min-w-[56px] justify-center">B (보통)</Badge> <span className="flex-1 pt-0.5">성실한 학교생활 및 학교 주도 프로그램의 수동적 참여.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 min-w-[56px] justify-center">C+ (미흡)</Badge> <span className="flex-1 pt-0.5">구체성이 결여된 나열식 기록 및 미흡한 역량 수준.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20 min-w-[56px] justify-center">C (부족)</Badge> <span className="flex-1 pt-0.5">평가 불가 수준의 기록 부실 및 근거 미비초.</span></li>
+                  <li className="flex gap-3"><Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 min-w-[56px] justify-center">D (부적격)</Badge> <span className="flex-1 pt-0.5">심각한 결격 사유 존재.</span></li>
+                </ul>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        {/* 메인 요약 문구 (에센스) */}
+        <div className="relative max-w-4xl mt-2 px-6 py-6 md:py-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl md:rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] w-full">
+          <span className="text-4xl md:text-5xl text-indigo-200 dark:text-indigo-900/30 absolute top-2 md:top-4 left-4 md:left-6 font-serif select-none pointer-events-none">"</span>
+          <p className="relative z-10 text-[15px] md:text-lg font-medium leading-relaxed md:leading-loose text-slate-800 dark:text-slate-200 px-4 md:px-10 text-center break-keep">
+            {evaluation.summary}
+          </p>
+          <span className="text-4xl md:text-5xl text-indigo-200 dark:text-indigo-900/30 absolute bottom-0 right-4 md:right-6 font-serif leading-none select-none pointer-events-none">"</span>
+        </div>
       </div>
 
       {/* Tabs */}
