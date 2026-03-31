@@ -7,7 +7,9 @@ import { StaticDataDto } from './static-data.dto';
 @Injectable()
 export class StaticDataService {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,  ) { }
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly prisma: PrismaService,
+  ) { }
 
   async getStaticData(): Promise<StaticDataDto> {
     // Temporarily disable cache to get fresh data from database
@@ -30,16 +32,16 @@ export class StaticDataService {
       admissions,
       recruitmentUnits,
     ] = await Promise.all([
-      this.subjectCodeRepository.find(),
-      this.generalFieldRepository.find(),
-      this.majorFieldRepository.find(),
-      this.midFieldRepository.find(),
-      this.minorFieldRepository.find(),
-      this.admissionSubtypeRepository.find(),
-      this.admissionSubtypeCategoryRepository.find({ order: { displayOrder: 'ASC' } }),
-      this.universityRepository.find(),
-      this.admissionRepository.find(),
-      this.recruitmentUnitRepository.find(),
+      this.prisma.ss_subject_code.findMany(),
+      this.prisma.ss_general_field.findMany(),
+      this.prisma.ss_major_field.findMany(),
+      this.prisma.ss_mid_field.findMany(),
+      this.prisma.ss_minor_field.findMany(),
+      this.prisma.ss_admission_subtype.findMany(),
+      this.prisma.ss_admission_subtype_category.findMany({ orderBy: { display_order: 'asc' } }),
+      this.prisma.ss_university.findMany(),
+      this.prisma.ss_admission.findMany(),
+      this.prisma.ss_recruitment_unit.findMany(),
     ]);
 
     console.log(`[StaticDataService] generalFields count: ${generalFields.length}`);
