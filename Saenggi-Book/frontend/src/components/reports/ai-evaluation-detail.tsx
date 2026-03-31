@@ -623,21 +623,21 @@ export function AiEvaluationDetail({
 
           {/* ======================= 학업 탭 ======================= */}
           <TabsContent value="academic" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <Tabs defaultValue="univ-criteria" className="w-full">
+             <Tabs defaultValue="materials" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                   <TabsTrigger 
-                      value="univ-criteria" 
-                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
-                   >
-                      <span className="text-lg">📋</span>
-                      <span>대학 평가 항목 위주</span>
-                   </TabsTrigger>
                    <TabsTrigger 
                       value="materials" 
                       className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
                    >
                       <span className="text-lg">🧩</span>
                       <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
                    </TabsTrigger>
                    <TabsTrigger 
                       value="comprehensive" 
@@ -746,21 +746,21 @@ export function AiEvaluationDetail({
 
           {/* ======================= 진로 탭 ======================= */}
           <TabsContent value="career" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <Tabs defaultValue="univ-criteria" className="w-full">
+             <Tabs defaultValue="materials" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                   <TabsTrigger 
-                      value="univ-criteria" 
-                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
-                   >
-                      <span className="text-lg">📋</span>
-                      <span>대학 평가 항목 위주</span>
-                   </TabsTrigger>
                    <TabsTrigger 
                       value="materials" 
                       className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
                    >
                       <span className="text-lg">🧩</span>
                       <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
                    </TabsTrigger>
                    <TabsTrigger 
                       value="comprehensive" 
@@ -869,21 +869,21 @@ export function AiEvaluationDetail({
 
           {/* ======================= 공동체 탭 ======================= */}
           <TabsContent value="community" className="space-y-8 m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <Tabs defaultValue="univ-criteria" className="w-full">
+             <Tabs defaultValue="materials" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto h-auto p-0 bg-transparent border-b border-slate-200 dark:border-slate-800 mb-8 rounded-none scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                   <TabsTrigger 
-                      value="univ-criteria" 
-                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
-                   >
-                      <span className="text-lg">📋</span>
-                      <span>대학 평가 항목 위주</span>
-                   </TabsTrigger>
                    <TabsTrigger 
                       value="materials" 
                       className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
                    >
                       <span className="text-lg">🧩</span>
                       <span>소재 위주</span>
+                   </TabsTrigger>
+                   <TabsTrigger 
+                      value="univ-criteria" 
+                      className="relative flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-4 pb-4 pt-2 font-medium text-slate-500 hover:text-slate-700 data-[state=active]:border-amber-500 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap transition-colors"
+                   >
+                      <span className="text-lg">📋</span>
+                      <span>대학 평가 항목 위주</span>
                    </TabsTrigger>
                    <TabsTrigger 
                       value="comprehensive" 
