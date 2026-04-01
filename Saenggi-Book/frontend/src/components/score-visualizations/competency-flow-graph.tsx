@@ -66,8 +66,8 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
     useEffect(() => {
         if (!graphRef.current) return;
         const fg = graphRef.current;
-        fg.d3Force('charge')?.strength(-1000);
-        fg.d3Force('link')?.distance(150);
+        fg.d3Force('charge')?.strength(-1200);
+        fg.d3Force('link')?.distance(80);
         fg.d3ReheatSimulation();
     }, [graphData, dimensions]);
 
@@ -99,10 +99,33 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
         ctx.globalAlpha = alpha;
 
         const color = COMPETENCY_COLORS[category] || '#6366f1';
-        const nodeWidth = 70;
-        const nodeHeight = 35;
+        const nodeWidth = 76;
+        const nodeHeight = 26;
         const x = node.x - nodeWidth / 2;
         const y = node.y - nodeHeight / 2;
+
+        // --- SWIMLANE DRAWING ---
+        const siblings = graphData.nodes.filter(n => n.grade === node.grade);
+        const minXNode = siblings.reduce((minN, n) => ((n as any).x || 0) < ((minN as any).x || 0) ? n : minN, siblings[0]);
+
+        if (minXNode && minXNode.id === node.id) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(-3000, node.y);
+            ctx.lineTo(3000, node.y);
+            ctx.strokeStyle = `${color}25`; 
+            ctx.setLineDash([6 / globalScale, 6 / globalScale]);
+            ctx.lineWidth = 1.5 / globalScale;
+            ctx.stroke();
+            
+            const txt = `${node.grade}학년`;
+            ctx.font = `bold 22px 'Noto Sans KR', sans-serif`;
+            ctx.fillStyle = `${color}40`; 
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(txt, ((minXNode as any).x || 0) - nodeWidth / 2 - 15, node.y);
+            ctx.restore();
+        }
 
         // Card shadow
         ctx.shadowColor = 'rgba(0,0,0,0.1)';
@@ -111,7 +134,7 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
 
         // Card background
         ctx.beginPath();
-        ctx.roundRect(x, y, nodeWidth, nodeHeight, 4);
+        ctx.roundRect(x, y, nodeWidth, nodeHeight, 6);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.strokeStyle = color;
@@ -120,15 +143,7 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
 
         ctx.shadowColor = 'transparent'; // reset shadow
 
-        // Grade Badge
-        const gradeStr = node.grade + '학년';
-        ctx.font = `bold ${6 / globalScale}px sans-serif`;
-        ctx.fillStyle = color;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(gradeStr, x + 4, y + 4);
-
-        // Title text
+        // Title text (Centered directly)
         ctx.font = `bold ${8 / globalScale}px 'Noto Sans KR', sans-serif`;
         ctx.fillStyle = '#1e293b';
         ctx.textAlign = 'center';
@@ -137,7 +152,7 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
         const lines = wrapText(node.label, 9);
         const lineHeight = (8 / globalScale) * 1.3;
         const totalH = lineHeight * lines.length;
-        const startY = node.y - totalH / 2 + lineHeight / 2 + 2;
+        const startY = node.y - totalH / 2 + lineHeight / 2;
 
         lines.forEach((line: string, i: number) => {
             ctx.fillText(line, node.x, startY + i * lineHeight);
@@ -233,8 +248,8 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
                                         width={dimensions.width}
                                         height={dimensions.height}
                                         graphData={graphData}
-                                        dagMode="lr"
-                                        dagLevelDistance={120}
+                                        dagMode="td"
+                                        dagLevelDistance={140}
                                         backgroundColor="#f8fafc"
                                         nodeRelSize={1}
                                         linkDirectionalArrowLength={6}
@@ -303,11 +318,11 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
                                             </p>
                                             <div className="mt-8 flex flex-col gap-3 opacity-70">
                                                 <div className="text-xs bg-gray-50 rounded p-2 border truncate">
-                                                    [이전] {hoveredLink.source?.label ?? "Source"}
+                                                    [이전] {(hoveredLink.source as any)?.label ?? "Source"}
                                                 </div>
                                                 <div className="text-center text-gray-400">↓</div>
                                                 <div className="text-xs bg-gray-50 rounded p-2 border truncate">
-                                                    [다음] {hoveredLink.target?.label ?? "Target"}
+                                                    [다음] {(hoveredLink.target as any)?.label ?? "Target"}
                                                 </div>
                                             </div>
                                         </div>
