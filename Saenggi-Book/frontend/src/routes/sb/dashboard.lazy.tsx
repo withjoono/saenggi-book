@@ -22,8 +22,10 @@ import {
   ChevronRight,
   Upload,
   TrendingUp,
-
   Ticket,
+  GraduationCap,
+  PenTool,
+  Wand2,
 } from "lucide-react";
 
 export const Route = createLazyFileRoute("/sb/dashboard")({
@@ -47,7 +49,7 @@ const serviceGroups: {
   items: ServiceItem[];
 }[] = [
     {
-      label: "입력과 평가",
+      label: "나의 생기부",
       labelColor: "text-blue-600",
       items: [
         {
@@ -60,57 +62,18 @@ const serviceGroups: {
           borderColor: "border-blue-100",
         },
         {
-          icon: ClipboardList,
-          title: "평가 신청",
-          description: "AI/사정관 평가 신청",
-          href: "/sb/request",
-          color: "text-violet-600",
-          bgColor: "bg-violet-50",
-          borderColor: "border-violet-100",
-        },
-        {
-          icon: FileCheck,
-          title: "평가 내역",
-          description: "생기부 평가 결과 확인",
-          href: "/sb/evaluation-list",
-          color: "text-fuchsia-600",
-          bgColor: "bg-fuchsia-50",
-          borderColor: "border-fuchsia-100",
-        },
-      ],
-    },
-    {
-      label: "교과",
-      labelColor: "text-emerald-600",
-      items: [
-        {
           icon: BarChart3,
-          title: "성적 분석",
-          description: "교과 성적 트렌드와 등급 분석",
+          title: "성적",
+          description: "교과 성적 트렌드",
           href: "/sb/performance",
           color: "text-emerald-600",
           bgColor: "bg-emerald-50",
           borderColor: "border-emerald-100",
         },
-      ],
-    },
-    {
-      label: "비교과",
-      labelColor: "text-purple-600",
-      items: [
-        {
-          icon: ClipboardList,
-          title: "출결",
-          description: "학년별 출결 현황 조회",
-          href: "/sb/attendance",
-          color: "text-cyan-600",
-          bgColor: "bg-cyan-50",
-          borderColor: "border-cyan-100",
-        },
         {
           icon: BookOpen,
           title: "세특",
-          description: "세부능력 및 특기사항 관리",
+          description: "세부능력 및 특기사항",
           href: "/sb/setuk",
           color: "text-amber-600",
           bgColor: "bg-amber-50",
@@ -126,26 +89,115 @@ const serviceGroups: {
           borderColor: "border-pink-100",
         },
         {
+          icon: ClipboardList,
+          title: "출결",
+          description: "학년별 출결 현황 조회",
+          href: "/sb/attendance",
+          color: "text-cyan-600",
+          bgColor: "bg-cyan-50",
+          borderColor: "border-cyan-100",
+        },
+      ],
+    },
+    {
+      label: "AI 분석",
+      labelColor: "text-violet-600",
+      items: [
+        {
+          icon: ClipboardList,
+          title: "분석 신청",
+          description: "AI/사정관 정밀 분석 신청",
+          href: "/sb/request",
+          color: "text-violet-600",
+          bgColor: "bg-violet-50",
+          borderColor: "border-violet-100",
+        },
+        {
+          icon: FileCheck,
+          title: "역량 분석 내역",
+          description: "4대 역량 기반 분석 결과",
+          href: "/sb/evaluation-list",
+          color: "text-fuchsia-600",
+          bgColor: "bg-fuchsia-50",
+          borderColor: "border-fuchsia-100",
+        },
+        {
+          icon: TrendingUp,
+          title: "성적 분석 통계",
+          description: "단위/비단위 성적 정밀 통계",
+          href: "/sb/performance",
+          color: "text-emerald-600",
+          bgColor: "bg-emerald-50",
+          borderColor: "border-emerald-100",
+        },
+        {
           icon: Sparkles,
           title: "AI 소재 분석",
-          description: "4대 역량별 소재 그래프 분석",
+          description: "역량별 소재 분포 그래프 분석",
           href: "/sb/material-analysis",
           color: "text-indigo-600",
           bgColor: "bg-indigo-50",
           borderColor: "border-indigo-100",
         },
+      ],
+    },
+    {
+      label: "전형 탐색",
+      labelColor: "text-orange-600",
+      items: [
+        {
+          icon: FileCheck,
+          title: "교과 전형",
+          description: "교과 성적 기반 지원 가능성",
+          href: "/sb/subject",
+          color: "text-orange-600",
+          bgColor: "bg-orange-50",
+          borderColor: "border-orange-100",
+        },
+        {
+          icon: GraduationCap,
+          title: "종합 전형",
+          description: "학생부 묶음 기반 지원 가능성",
+          href: "/sb/comprehensive",
+          color: "text-rose-600",
+          bgColor: "bg-rose-50",
+          borderColor: "border-rose-100",
+        },
+        {
+          icon: PenTool,
+          title: "논술 전형",
+          description: "논술 성과 기반 분석",
+          href: "/sb/nonsul",
+          color: "text-teal-600",
+          bgColor: "bg-teal-50",
+          borderColor: "border-teal-100",
+        },
         {
           icon: Building2,
-          title: "빌드 (활동 추천)",
-          description: "목표 대학 기반 Gap 분석 · 활동 추천 · 로드맵",
+          title: "목표 대학 설정",
+          description: "목표 대학 기반 Gap 분석 및 로드맵",
           href: "/sb/build",
-          color: "text-violet-600",
-          bgColor: "bg-violet-50",
-          borderColor: "border-violet-100",
+          color: "text-blue-600",
+          bgColor: "bg-blue-50",
+          borderColor: "border-blue-100",
         },
       ],
     },
-
+    {
+      label: "빌드업",
+      labelColor: "text-olive-600",
+      items: [
+        {
+          icon: Wand2,
+          title: "세특 마법사",
+          description: "전공 연계 세특 주제 및 초안 생성",
+          href: "/sb/setuk-builder",
+          color: "text-olive-600",
+          bgColor: "bg-olive-50",
+          borderColor: "border-olive-100",
+        },
+      ],
+    },
   ];
 
 /* ─── 시작 가이드 단계 ─── */
@@ -322,7 +374,7 @@ function DashboardPage() {
 
 
 
-            {/* 평가 티켓 */}
+            {/* 분석 티켓 */}
             <Link
               to="/sb/request"
               className="group rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-5"
@@ -333,7 +385,7 @@ function DashboardPage() {
                 </div>
                 <ChevronRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-gray-500" />
               </div>
-              <p className="text-xs font-medium text-gray-500">평가 티켓</p>
+              <p className="text-xs font-medium text-gray-500">분석 티켓</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">
                 {ticketCount}
                 <span className="ml-1 text-sm font-medium text-gray-400">
@@ -342,8 +394,8 @@ function DashboardPage() {
               </p>
               <p className="mt-1 text-xs text-gray-400">
                 {ticketCount > 0
-                  ? "AI/사정관 평가를 신청하세요"
-                  : "이용권을 구매하여 평가를 받아보세요"}
+                  ? "AI/사정관 분석을 신청하세요"
+                  : "이용권을 구매하여 분석을 받아보세요"}
               </p>
             </Link>
           </div>
