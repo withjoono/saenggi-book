@@ -287,6 +287,13 @@ export const SbHeader = () => {
                     >
                       목표 대학
                     </Link>
+                    <Link
+                      to="/sb/setuk-builder"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 text-olive-600 hover:bg-olive-50")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      ✨ 세특 마법사
+                    </Link>
                   </div>
 
                   <Separator className="my-2 bg-gray-200" />
@@ -520,6 +527,7 @@ export const SbHeader = () => {
                     <div className="p-2 md:w-[150px]">
                       <div className="flex flex-col gap-1">
                         <Link to="/sb/build" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">목표 대학</Link>
+                        <Link to="/sb/setuk-builder" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-bold text-olive-600">✨ 세특 마법사</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>

@@ -12,57 +12,20 @@ export class StaticDataService {
   ) { }
 
   async getStaticData(): Promise<StaticDataDto> {
-    // Temporarily disable cache to get fresh data from database
-    // const cachedData = await this.cacheManager.get<StaticDataDto>('staticData');
-    // if (cachedData) {
-    //   console.log('[StaticDataService] Returning cached data');
-    //   return cachedData;
-    // }
+    console.log('[StaticDataService] Fetching data from Susi-Backend...');
+    try {
+      const resp = await fetch('https://susi-backend-dot-ts-back-nest-479305.du.r.appspot.com/static-data');
+      if (!resp.ok) {
+         throw new Error('Susi-Backend returned ' + resp.status);
+      }
+      const staticData: StaticDataDto = await resp.json();
 
-    console.log('[StaticDataService] Fetching data from database...');
-    const [
-      subjectCodes,
-      generalFields,
-      majorFields,
-      midFields,
-      minorFields,
-      admissionSubtypes,
-      admissionSubtypeCategories,
-      universities,
-      admissions,
-      recruitmentUnits,
-    ] = await Promise.all([
-      this.prisma.ss_subject_code.findMany(),
-      this.prisma.ss_general_field.findMany(),
-      this.prisma.ss_major_field.findMany(),
-      this.prisma.ss_mid_field.findMany(),
-      this.prisma.ss_minor_field.findMany(),
-      this.prisma.ss_admission_subtype.findMany(),
-      this.prisma.ss_admission_subtype_category.findMany({ orderBy: { display_order: 'asc' } }),
-      this.prisma.ss_university.findMany(),
-      this.prisma.ss_admission.findMany(),
-      this.prisma.ss_recruitment_unit.findMany(),
-    ]);
-
-    console.log(`[StaticDataService] generalFields count: ${generalFields.length}`);
-
-    const staticData: StaticDataDto = {
-      subjectCodes,
-      generalFields,
-      majorFields,
-      midFields,
-      minorFields,
-      admissionSubtypes,
-      admissionSubtypeCategories,
-      universityNames: [...new Set(universities.map((u) => u.name))],
-      admissionNames: [...new Set(admissions.map((a) => a.name))],
-      recruitmentUnitNames: [...new Set(recruitmentUnits.map((r) => r.name))],
-    };
-
-    // 캐시에 데이터 저장 (1시간 동안 유효)
-    await this.cacheManager.set('staticData', staticData, 3600000);
-
-    return staticData;
+      await this.cacheManager.set('staticData', staticData, 3600000);
+      return staticData;
+    } catch (e) {
+      console.error('[StaticDataService] Error fetching data:', e);
+      throw e;
+    }
   }
 
 

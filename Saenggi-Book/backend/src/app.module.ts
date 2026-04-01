@@ -53,6 +53,8 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { winstonConfig } from './common/utils/winston.utils';
 import { WinstonModule } from 'nest-winston';
 
+import { SetukBuilderModule } from './modules/setuk-builder/setuk-builder.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -134,7 +136,7 @@ import { WinstonModule } from 'nest-winston';
     CoreModule,
     StaticDataModule, // 정적데이터 모듈(교과 코드, 계열 등)
     ExplorationModule,
-
+    SetukBuilderModule,
 
   ],
   controllers: [AppController],
