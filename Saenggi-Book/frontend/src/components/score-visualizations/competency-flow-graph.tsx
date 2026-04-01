@@ -92,40 +92,56 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
     };
 
     const paintNode = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-        const isHovered = hoveredNodeId === node.id || (!hoveredNodeId && !hoveredLinkId);
-        const alpha = isHovered ? 1 : 0.2;
-        
-        ctx.save();
-        ctx.globalAlpha = alpha;
-
         const color = COMPETENCY_COLORS[category] || '#6366f1';
         const nodeWidth = 76;
         const nodeHeight = 26;
         const x = node.x - nodeWidth / 2;
         const y = node.y - nodeHeight / 2;
 
-        // --- SWIMLANE DRAWING ---
+        // --- SWIMLANE BACKGROUND (Independent of Node Alpha) ---
         const siblings = graphData.nodes.filter(n => n.grade === node.grade);
         const minXNode = siblings.reduce((minN, n) => ((n as any).x || 0) < ((minN as any).x || 0) ? n : minN, siblings[0]);
 
         if (minXNode && minXNode.id === node.id) {
             ctx.save();
+            const yLine = node.y - 45; // 경계선을 노드들 약간 위에 렌더링
+
+            // 긴 가로 점선
             ctx.beginPath();
-            ctx.moveTo(-3000, node.y);
-            ctx.lineTo(3000, node.y);
-            ctx.strokeStyle = `${color}25`; 
+            ctx.moveTo(-3000, yLine);
+            ctx.lineTo(3000, yLine);
+            ctx.strokeStyle = `${color}40`; 
             ctx.setLineDash([6 / globalScale, 6 / globalScale]);
             ctx.lineWidth = 1.5 / globalScale;
             ctx.stroke();
             
+            // 중앙 'N학년' 뱃지
             const txt = `${node.grade}학년`;
-            ctx.font = `bold 22px 'Noto Sans KR', sans-serif`;
-            ctx.fillStyle = `${color}40`; 
-            ctx.textAlign = 'right';
+            ctx.font = `bold 13px 'Noto Sans KR', sans-serif`;
+            const tw = ctx.measureText(txt).width + 20;
+            const th = 22;
+
+            ctx.beginPath();
+            ctx.roundRect(-tw / 2, yLine - th / 2, tw, th, th / 2);
+            ctx.fillStyle = '#f8fafc'; // 배경색 매칭
+            ctx.fill();
+            ctx.strokeStyle = `${color}60`;
+            ctx.lineWidth = 1.5 / globalScale;
+            ctx.stroke();
+
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(txt, ((minXNode as any).x || 0) - nodeWidth / 2 - 15, node.y);
+            ctx.fillText(txt, 0, yLine);
             ctx.restore();
         }
+
+        // --- NODE DRAWING ---
+        const isHovered = hoveredNodeId === node.id || (!hoveredNodeId && !hoveredLinkId);
+        const alpha = isHovered ? 1 : 0.2;
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
 
         // Card shadow
         ctx.shadowColor = 'rgba(0,0,0,0.1)';
