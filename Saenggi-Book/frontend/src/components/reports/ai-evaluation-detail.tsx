@@ -667,6 +667,7 @@ export function AiEvaluationDetail({
                            centerLabel="학업 역량" 
                            initialHeight={550} 
                            colorBy="gradeLevel"
+                           graphMode="tree"
                            onMaterialClick={(idx) => handleMaterialClick('academic', idx)}
                          />
                        </div>
@@ -790,6 +791,7 @@ export function AiEvaluationDetail({
                            centerLabel="진로 역량" 
                            initialHeight={550} 
                            colorBy="gradeLevel"
+                           graphMode="tree"
                            onMaterialClick={(idx) => handleMaterialClick('career', idx)}
                          />
                        </div>
@@ -913,6 +915,7 @@ export function AiEvaluationDetail({
                            centerLabel="공동체 역량" 
                            initialHeight={550} 
                            colorBy="gradeLevel"
+                           graphMode="tree"
                            onMaterialClick={(idx) => handleMaterialClick('community', idx)}
                          />
                        </div>
@@ -1042,6 +1045,7 @@ export function AiEvaluationDetail({
                     centerLabel="기타 역량" 
                     initialHeight={550} 
                     colorBy="gradeLevel"
+                    graphMode="tree"
                     onMaterialClick={(idx) => handleMaterialClick('other', idx)}
                   />
                 </div>
