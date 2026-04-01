@@ -252,13 +252,6 @@ export const SbHeader = () => {
                     >
                       성적 분석 통계
                     </Link>
-                    <Link
-                      to="/sb/material-analysis"
-                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 font-medium text-gray-700 hover:bg-gray-100")}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      AI 소재 분석
-                    </Link>
                   </div>
 
                   <Separator className="my-2 bg-gray-200" />
@@ -492,7 +485,6 @@ export const SbHeader = () => {
                         
                         <Separator className="my-2" />
                         <Link to="/sb/performance" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">성적 분석 통계</Link>
-                        <Link to="/sb/material-analysis" className="flex items-center rounded-lg px-3 py-2 hover:bg-accent font-medium text-gray-900">AI 소재 분석</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>

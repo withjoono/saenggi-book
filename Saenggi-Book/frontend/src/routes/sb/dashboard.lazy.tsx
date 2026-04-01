@@ -130,15 +130,6 @@ const serviceGroups: {
           bgColor: "bg-emerald-50",
           borderColor: "border-emerald-100",
         },
-        {
-          icon: Sparkles,
-          title: "AI 소재 분석",
-          description: "역량별 소재 분포 그래프 분석",
-          href: "/sb/material-analysis",
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50",
-          borderColor: "border-indigo-100",
-        },
       ],
     },
     {
