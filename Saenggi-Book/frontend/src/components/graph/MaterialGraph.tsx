@@ -11,11 +11,12 @@ const ForceGraph2D = lazy(() => import('react-force-graph-2d'));
 interface MaterialNode {
     id: string;
     label: string;
-    category: CompetencyCategory;
+    category: CompetencyCategory | string;
     gradeLevel: number;
     severity: 'high' | 'medium' | 'low';
     detail?: string;
     isCenter?: boolean;
+    isBranch?: boolean;
     materialIndex?: number;
     x?: number;
     y?: number;
@@ -33,6 +34,7 @@ interface MaterialGraphProps {
     centerLabel?: string;
     initialHeight?: number;
     colorBy?: 'category' | 'gradeLevel';
+    graphMode?: 'radial' | 'tree';
     onMaterialClick?: (materialIndex: number) => void;
 }
 
@@ -55,6 +57,7 @@ export default function MaterialGraph({
     centerLabel = '생기부',
     initialHeight = 500,
     colorBy = 'category',
+    graphMode = 'radial',
     onMaterialClick,
 }: MaterialGraphProps) {
     const graphRef = useRef<any>(null);
@@ -110,37 +113,89 @@ export default function MaterialGraph({
             gradeLevel: 1, // dummy for center
             severity: 'high',
             isCenter: true,
-            fx: 0,
-            fy: 0,
+            fx: graphMode === 'radial' ? 0 : undefined,
+            fy: graphMode === 'radial' ? 0 : undefined,
         };
 
-        const n = materials.length;
-        const materialNodes: MaterialNode[] = materials.map((mat, idx) => {
-            const sev = mat.severity || 'medium';
-            const baseRadius = sev === 'high' ? 220 : sev === 'medium' ? 350 : 480;
-            const angle = (2 * Math.PI * idx) / Math.max(n, 1) - Math.PI / 2;
+        if (graphMode === 'radial') {
+            const n = materials.length;
+            const materialNodes: MaterialNode[] = materials.map((mat, idx) => {
+                const sev = mat.severity || 'medium';
+                const baseRadius = sev === 'high' ? 220 : sev === 'medium' ? 350 : 480;
+                const angle = (2 * Math.PI * idx) / Math.max(n, 1) - Math.PI / 2;
 
-            return {
-                id: `mat-${idx}`,
-                label: mat.title || `소재 ${idx + 1}`,
-                category: mat.category || 'other',
-                gradeLevel: mat.gradeLevel || 7,
-                severity: sev,
-                detail: mat.summary || '',
-                materialIndex: idx,
-                x: Math.cos(angle) * baseRadius,
-                y: Math.sin(angle) * baseRadius,
+                return {
+                    id: `mat-${idx}`,
+                    label: mat.title || `소재 ${idx + 1}`,
+                    category: mat.category || 'other',
+                    gradeLevel: mat.gradeLevel || 7,
+                    severity: sev,
+                    detail: mat.summary || '',
+                    materialIndex: idx,
+                    x: Math.cos(angle) * baseRadius,
+                    y: Math.sin(angle) * baseRadius,
+                };
+            });
+
+            const nodes = [centerNode, ...materialNodes];
+            const links: MaterialLink[] = materialNodes.map(nd => ({
+                source: '__center__',
+                target: nd.id,
+            }));
+
+            return { nodes, links };
+        } else {
+            // 트리 형태 (Depth Map) 로직
+            const SOURCE_TYPE_LABELS: Record<string, string> = {
+                subject: '교과 세특',
+                creative: '창체/자율',
+                behavior: '인성/행특',
             };
-        });
 
-        const nodes = [centerNode, ...materialNodes];
-        const links: MaterialLink[] = materialNodes.map(nd => ({
-            source: '__center__',
-            target: nd.id,
-        }));
+            const sourceTypes = new Set<string>();
+            materials.forEach(m => {
+                const type = m.sources?.[0]?.type || 'other';
+                sourceTypes.add(type);
+            });
 
-        return { nodes, links };
-    }, [materials, centerLabel]);
+            const branchNodes: MaterialNode[] = Array.from(sourceTypes).map(type => ({
+                id: `branch-${type}`,
+                label: SOURCE_TYPE_LABELS[type] || '기타 활동',
+                category: type === 'subject' ? 'academic' : type === 'creative' ? 'career' : type === 'behavior' ? 'community' : 'other',
+                gradeLevel: 0,
+                severity: 'high',
+                isBranch: true,
+            }));
+
+            const materialNodes: MaterialNode[] = materials.map((mat, idx) => {
+                return {
+                    id: `mat-${idx}`,
+                    label: mat.title || `소재 ${idx + 1}`,
+                    category: mat.category || 'other',
+                    gradeLevel: mat.gradeLevel || 7,
+                    severity: mat.severity || 'medium',
+                    detail: mat.summary || '',
+                    materialIndex: idx,
+                };
+            });
+
+            const nodes = [centerNode, ...branchNodes, ...materialNodes];
+            const links: MaterialLink[] = [];
+
+            // 연결 1: 중심 -> 분기점(출처 카테고리)
+            branchNodes.forEach(b => {
+                links.push({ source: '__center__', target: b.id });
+            });
+
+            // 연결 2: 분기점 -> 개별 소재
+            materials.forEach((mat, idx) => {
+                const type = mat.sources?.[0]?.type || 'other';
+                links.push({ source: `branch-${type}`, target: `mat-${idx}` });
+            });
+
+            return { nodes, links };
+        }
+    }, [materials, centerLabel, graphMode]);
 
     // 줌핏
     useEffect(() => {
@@ -170,31 +225,41 @@ export default function MaterialGraph({
         if (!graphRef.current) return;
         const fg = graphRef.current;
 
-        fg.d3Force('charge')?.strength((nd: any) => nd.isCenter ? -3000 : -1200);
+        if (graphMode === 'radial') {
+            fg.d3Force('charge')?.strength((nd: any) => nd.isCenter ? -3000 : -1200);
 
-        fg.d3Force('link')?.distance((link: any) => {
-            const target = typeof link.target === 'object' ? link.target : null;
-            if (!target) return 350;
-            const sev = target.severity || 'medium';
-            switch (sev) {
-                case 'high': return 220;
-                case 'medium': return 350;
-                case 'low': return 480;
-                default: return 350;
-            }
-        });
+            fg.d3Force('link')?.distance((link: any) => {
+                const target = typeof link.target === 'object' ? link.target : null;
+                if (!target) return 350;
+                const sev = target.severity || 'medium';
+                switch (sev) {
+                    case 'high': return 220;
+                    case 'medium': return 350;
+                    case 'low': return 480;
+                    default: return 350;
+                }
+            });
+
+            fg.d3Force('collide', d3.forceCollide()
+                .radius((nd: any) => (nd.isCenter ? CENTER_RADIUS : NODE_RADIUS) + 60)
+                .strength(0.8)
+                .iterations(4)
+            );
+        } else {
+            fg.d3Force('charge')?.strength(-1000);
+            fg.d3Force('link')?.distance(110);
+            fg.d3Force('collide', d3.forceCollide()
+                .radius((nd: any) => (nd.isCenter ? CENTER_RADIUS : nd.isBranch ? 35 : NODE_RADIUS) + 40)
+                .strength(0.8)
+                .iterations(4)
+            );
+        }
 
         fg.d3Force('link')?.strength(0.3);
 
-        fg.d3Force('collide', d3.forceCollide()
-            .radius((nd: any) => (nd.isCenter ? CENTER_RADIUS : NODE_RADIUS) + 60)
-            .strength(0.8)
-            .iterations(4)
-        );
-
         // 물리 엔진을 재가열하여 커스텀 포스가 초기 렌더링에 즉시 반영되게 함
         fg.d3ReheatSimulation();
-    }, [graphData, dimensions]);
+    }, [graphData, dimensions, graphMode]);
 
     // 노드 클릭
     const handleNodeClick = useCallback((node: any) => {
@@ -229,12 +294,15 @@ export default function MaterialGraph({
         const alpha = isDimmed ? 0.15 : 1;
 
         const isCenter = node.isCenter;
+        const isBranch = node.isBranch;
         const color = isCenter
             ? CENTER_COLOR
-            : colorBy === 'gradeLevel'
-                ? GRADE_LEVEL_COLORS[node.gradeLevel] || COMPETENCY_COLORS.other
-                : COMPETENCY_COLORS[node.category as CompetencyCategory] || COMPETENCY_COLORS.other;
-        const radius = isCenter ? CENTER_RADIUS : NODE_RADIUS;
+            : isBranch
+                ? '#64748b' // Slate-500 for branches
+                : colorBy === 'gradeLevel'
+                    ? GRADE_LEVEL_COLORS[node.gradeLevel] || COMPETENCY_COLORS.other
+                    : COMPETENCY_COLORS[node.category as CompetencyCategory] || COMPETENCY_COLORS.other;
+        const radius = isCenter ? CENTER_RADIUS : isBranch ? 35 : NODE_RADIUS;
 
         ctx.save();
         ctx.globalAlpha = alpha;
@@ -259,8 +327,8 @@ export default function MaterialGraph({
         ctx.stroke();
 
         // 텍스트
-        const maxCharsPerLine = isCenter ? 4 : 6;
-        const fontSize = (isCenter ? 10 : 8.5) / globalScale;
+        const maxCharsPerLine = isCenter ? 4 : isBranch ? 5 : 6;
+        const fontSize = (isCenter ? 10 : isBranch ? 9 : 8.5) / globalScale;
         ctx.font = `bold ${fontSize}px 'Noto Sans KR', sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -275,8 +343,8 @@ export default function MaterialGraph({
             ctx.fillText(line, node.x, startY + i * lineHeight);
         });
 
-        // 어필 강도 뱃지
-        if (!isCenter && node.severity) {
+        // 어필 강도 뱃지 (잎새 노드 전용)
+        if (!isCenter && !isBranch && node.severity) {
             const badgeLabel = SEVERITY_LABELS[node.severity] || '';
             const badgeSize = 7 / globalScale;
             ctx.font = `bold ${badgeSize}px sans-serif`;
@@ -371,6 +439,8 @@ export default function MaterialGraph({
                         width={dimensions.width}
                         height={dimensions.height}
                         graphData={graphData}
+                        dagMode={graphMode === 'tree' ? 'td' : undefined}
+                        dagLevelDistance={graphMode === 'tree' ? 120 : undefined}
                         nodeLabel=""
                         nodeRelSize={6}
                         linkDirectionalParticles={0}
