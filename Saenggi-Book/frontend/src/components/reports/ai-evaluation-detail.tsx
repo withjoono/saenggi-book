@@ -590,7 +590,7 @@ export function AiEvaluationDetail({
             
             <div className="space-y-4">
               <h4 className="text-lg font-bold flex items-center gap-2">🔀 전체 소재 연결 네트워크</h4>
-              <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-slate-200/60 overflow-hidden bg-slate-950">
+              <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-slate-200/60 overflow-hidden bg-slate-50/50">
                 <div className="w-full">
                   <MaterialGraph 
                     materials={(evaluation.materials || []).map(m => ({
@@ -657,7 +657,7 @@ export function AiEvaluationDetail({
                 <TabsContent value="materials" className="space-y-8 mt-0 animate-in fade-in duration-300">
                    <div className="space-y-4">
                      <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-blue-500">🔀</span> 관련 핵심 소재 네트워크</h4>
-                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden bg-slate-950">
+                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-blue-200/60 overflow-hidden bg-slate-50/50">
                        <div className="w-full">
                          <MaterialGraph 
                            materials={getMaterialsByCategory('academic').map(m => ({
@@ -780,7 +780,7 @@ export function AiEvaluationDetail({
                 <TabsContent value="materials" className="space-y-8 mt-0 animate-in fade-in duration-300">
                    <div className="space-y-4">
                      <h4 className="text-lg font-bold flex items-center gap-2"><span className="text-emerald-500">🔀</span> 관련 핵심 소재 네트워크</h4>
-                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden bg-slate-950">
+                     <Card className="p-1 flex flex-col items-center justify-center shadow-sm border-emerald-200/60 overflow-hidden bg-slate-50/50">
                        <div className="w-full">
                          <MaterialGraph 
                            materials={getMaterialsByCategory('career').map(m => ({

@@ -239,19 +239,23 @@ export default function MaterialGraph({
         ctx.save();
         ctx.globalAlpha = alpha;
 
-        // 글로우
+        // 그림자 및 글로우
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
         ctx.beginPath();
-        ctx.arc(node.x, node.y, radius + 6, 0, 2 * Math.PI);
-        ctx.fillStyle = `${color}22`;
+        ctx.arc(node.x, node.y, radius + 4, 0, 2 * Math.PI);
+        ctx.fillStyle = `${color}15`;
         ctx.fill();
+        ctx.shadowColor = 'transparent';
 
         // 원
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
         ctx.fillStyle = color;
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         // 텍스트
@@ -260,7 +264,7 @@ export default function MaterialGraph({
         ctx.font = `bold ${fontSize}px 'Noto Sans KR', sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#ffffff'; // The node is colored, so white text is still good inside the node
 
         const lines = wrapText(node.label, maxCharsPerLine);
         const lineHeight = fontSize * 1.25;
@@ -278,7 +282,7 @@ export default function MaterialGraph({
             ctx.font = `bold ${badgeSize}px sans-serif`;
             ctx.beginPath();
             ctx.arc(node.x + radius * 0.7, node.y - radius * 0.7, 9 / globalScale, 0, 2 * Math.PI);
-            ctx.fillStyle = isDimmed ? 'rgba(15,23,42,0.3)' : '#0f172a';
+            ctx.fillStyle = isDimmed ? 'rgba(255,255,255,0.5)' : '#ffffff';
             ctx.fill();
             ctx.strokeStyle = color;
             ctx.lineWidth = 1.5 / globalScale;
@@ -309,8 +313,8 @@ export default function MaterialGraph({
         ctx.beginPath();
         ctx.moveTo(sx, sy);
         ctx.lineTo(tx, ty);
-        ctx.strokeStyle = isDimmed ? 'rgba(148,163,184,0.06)' : `${color}88`;
-        ctx.lineWidth = isDimmed ? 0.5 : 2.5;
+        ctx.strokeStyle = isDimmed ? 'rgba(148,163,184,0.1)' : `${color}cc`;
+        ctx.lineWidth = isDimmed ? 0.8 : 2.5;
         ctx.stroke();
     }, [connectedSet]);
 
@@ -370,7 +374,7 @@ export default function MaterialGraph({
                         nodeLabel=""
                         nodeRelSize={6}
                         linkDirectionalParticles={0}
-                        backgroundColor="#0f172a"
+                        backgroundColor="transparent"
                         d3AlphaDecay={0.02}
                         d3VelocityDecay={0.25}
                         cooldownTicks={150}
