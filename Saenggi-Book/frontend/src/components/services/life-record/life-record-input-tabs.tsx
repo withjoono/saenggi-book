@@ -42,9 +42,12 @@ export const LifeRecordInputTabs: React.FC = () => {
 
   const handleSave = useCallback(async () => {
     if (totalEmptyFields > 0) {
-      setShowEmptyWarning(true);
-      setTimeout(() => setShowEmptyWarning(false), 3000);
-      return;
+      const confirmSave = window.confirm(`빈칸이 ${totalEmptyFields}개 있습니다. 이대로 강제 저장하시겠습니까?\n(시험용 강제 저장)`);
+      if (!confirmSave) {
+        setShowEmptyWarning(true);
+        setTimeout(() => setShowEmptyWarning(false), 3000);
+        return;
+      }
     }
     setShowEmptyWarning(false);
     const success = await onClickSaveGrade();

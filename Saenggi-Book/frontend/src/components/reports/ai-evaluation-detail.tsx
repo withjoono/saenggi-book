@@ -27,6 +27,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "기타역량",
 };
 
+const SOURCE_TYPE_LABELS: Record<string, string> = {
+  subject: "📚 세특",
+  creative: "🎨 창체",
+  behavior: "💬 행특",
+};
+
 const CATEGORY_COLORS: Record<string, string> = {
   academic: "bg-blue-100 text-blue-800 border-blue-200",
   career: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -265,7 +271,8 @@ function MaterialsList({
           >
           <div className="flex items-start justify-between">
             <p className="font-semibold text-sm mr-2">{m.title}</p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500">{m.score}점</span>
               <Badge className="shrink-0 font-medium text-white border-0" style={{ backgroundColor: GRADE_LEVEL_COLORS[m.gradeLevel] || '#94a3b8' }}>
                 {GRADE_LETTER_MAPPING[m.gradeLevel]}
               </Badge>
@@ -286,6 +293,19 @@ function MaterialsList({
                   className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300"
                 >
                   #{kw}
+                </span>
+              ))}
+            </div>
+          )}
+          {m.sourceTypes?.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-1">
+              <span className="text-[10px] font-medium text-slate-400 mr-1">출처:</span>
+              {[...new Set(m.sourceTypes)].map((type, si) => (
+                <span
+                  key={si}
+                  className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                >
+                  {SOURCE_TYPE_LABELS[type] || type}
                 </span>
               ))}
             </div>

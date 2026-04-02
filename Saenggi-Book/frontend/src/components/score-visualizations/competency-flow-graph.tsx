@@ -98,12 +98,14 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
         const x = node.x - nodeWidth / 2;
         const y = node.y - nodeHeight / 2;
 
-        // --- SWIMLANE BACKGROUND (Independent of Node Alpha) ---
+        // --- SWIMLANE BACKGROUND (항상 full opacity로 렌더링, hover 상태와 무관) ---
         const siblings = graphData.nodes.filter(n => n.grade === node.grade);
         const minXNode = siblings.reduce((minN, n) => ((n as any).x || 0) < ((minN as any).x || 0) ? n : minN, siblings[0]);
 
         if (minXNode && minXNode.id === node.id) {
             ctx.save();
+            ctx.globalAlpha = 1; // 학년 구분선은 항상 완전 불투명
+            ctx.setLineDash([]); // 점선 초기화
             const yLine = node.y - 45; // 경계선을 노드들 약간 위에 렌더링
 
             // 긴 가로 점선
@@ -114,15 +116,18 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
             ctx.setLineDash([6 / globalScale, 6 / globalScale]);
             ctx.lineWidth = 1.5 / globalScale;
             ctx.stroke();
+            ctx.setLineDash([]); // 점선 해제
             
-            // 중앙 'N학년' 뱃지
+            // 중앙 'N학년' 뱃지 (항상 고정된 스크린 사이즈로 출력)
             const txt = `${node.grade}학년`;
-            ctx.font = `bold 13px 'Noto Sans KR', sans-serif`;
-            const tw = ctx.measureText(txt).width + 20;
-            const th = 22;
+            const fontSize = 13 / globalScale;
+            ctx.font = `bold ${fontSize}px 'Noto Sans KR', sans-serif`;
+            const tw = ctx.measureText(txt).width + (16 / globalScale);
+            const th = 22 / globalScale;
+            const r = th / 2;
 
             ctx.beginPath();
-            ctx.roundRect(-tw / 2, yLine - th / 2, tw, th, th / 2);
+            ctx.roundRect(-tw / 2, yLine - th / 2, tw, th, r);
             ctx.fillStyle = '#f8fafc'; // 배경색 매칭
             ctx.fill();
             ctx.strokeStyle = `${color}60`;
@@ -176,7 +181,7 @@ export default function CompetencyFlowGraph({ data, category, isLoading }: Props
 
         ctx.restore();
         node.__bckgDimensions = [nodeWidth, nodeHeight]; // For pointer interaction
-    }, [category, hoveredNodeId, hoveredLinkId]);
+    }, [category, hoveredNodeId, hoveredLinkId, graphData]);
 
     const paintLink = useCallback((link: any, ctx: CanvasRenderingContext2D) => {
         const isHovered = hoveredLinkId === link.id || (!hoveredLinkId && !hoveredNodeId);
