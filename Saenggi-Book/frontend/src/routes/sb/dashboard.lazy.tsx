@@ -204,21 +204,30 @@ const guideSteps = [
   },
   {
     step: 2,
-    title: "성적 분석 확인",
-    description: "입력된 성적을 분석하고 트렌드를 확인합니다.",
-    href: "/sb/performance",
+    title: "AI 역량 분석",
+    description: "AI 사정관이 4대 역량별 발달 서사와 약점을 진단합니다.",
+    href: "/sb/request",
     icon: TrendingUp,
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
   },
   {
     step: 3,
-    title: "빌드 (활동 추천)",
+    title: "목표 대학 빌드업",
     description: "목표 대학 기반 Gap 분석과 활동을 추천받습니다.",
     href: "/sb/build",
     icon: Building2,
     color: "text-violet-600",
     bgColor: "bg-violet-50",
+  },
+  {
+    step: 4,
+    title: "세특 마법사",
+    description: "발달 서사에 맞는 수행평가 주제 추천 및 세특 초안을 생성합니다.",
+    href: "/sb/setuk-builder",
+    icon: Wand2,
+    color: "text-olive-600",
+    bgColor: "bg-olive-50",
   },
 ];
 
@@ -406,12 +415,12 @@ function DashboardPage() {
                       시작 가이드
                     </h2>
                     <p className="text-sm text-gray-500">
-                      3단계로 수시 대입 전략을 시작하세요
+                      4단계로 수시 대입 전략을 시작하세요
                     </p>
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {guideSteps.map((step, idx) => (
                     <Link
                       key={step.step}
@@ -426,7 +435,9 @@ function DashboardPage() {
                               ? "bg-blue-500"
                               : idx === 1
                                 ? "bg-emerald-500"
-                                : "bg-purple-500"
+                                : idx === 2
+                                  ? "bg-purple-500"
+                                  : "bg-olive-500"
                           )}
                         >
                           {step.step}

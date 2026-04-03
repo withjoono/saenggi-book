@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useGetSchoolRecords, useGetCurrentUser } from "@/stores/server/features/me/queries";
 import nestApiClient from "@/stores/server/api-client";
@@ -615,6 +615,16 @@ function BuildPage() {
                                         {rec.tip && (
                                             <span className="text-indigo-600">💡 Tip: {rec.tip}</span>
                                         )}
+                                    </div>
+
+                                    {/* 세특 만들기 CTA */}
+                                    <div className="mt-4 border-t border-gray-100 pt-3">
+                                        <Link
+                                            to="/sb/setuk-builder"
+                                            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:from-indigo-600 hover:to-purple-600 hover:-translate-y-0.5 hover:shadow-md"
+                                        >
+                                            ✨ 이 활동으로 세특 만들기
+                                        </Link>
                                     </div>
                                 </div>
                             ))}
