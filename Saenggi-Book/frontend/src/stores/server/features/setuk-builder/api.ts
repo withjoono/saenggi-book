@@ -4,10 +4,14 @@ import { RecommendTopicRequestDto, RecommendedTopic, GenerateDraftRequestDto, Ge
 export const setukBuilderApi = {
     recommendTopics: async (dto: RecommendTopicRequestDto): Promise<RecommendedTopic[]> => {
         const response = await nestApiClient.post('/setuk-builder/recommend-topics', dto);
-        return response.data;
+        return response.data?.data || response.data;
     },
     generateDraft: async (dto: GenerateDraftRequestDto): Promise<GenerateDraftResponse> => {
         const response = await nestApiClient.post('/setuk-builder/generate-draft', dto);
-        return response.data;
-    }
+        return response.data?.data || response.data;
+    },
+    fetchSubjectList: async (): Promise<string[]> => {
+        const response = await nestApiClient.get('/setuk-builder/subjects');
+        return response.data?.data || response.data;
+    },
 };

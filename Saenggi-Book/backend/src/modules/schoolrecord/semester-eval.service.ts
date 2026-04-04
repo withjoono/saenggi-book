@@ -612,6 +612,7 @@ ${inputData}
                 score: m.score,
                 relatedKeywords: m.relatedKeywords,
                 sourceTypes: m.sources.map(s => s.type),
+                sourceGrades: m.sources.map(s => s.grade), // 플로우 그래프 표시용
             }));
 
             const comprehensiveResult = result as ComprehensiveEvalResult;

@@ -66,6 +66,7 @@ export interface EvalMaterialItem {
     score: number;             // 7~1점
     sources: EvalMaterialSource[];
     relatedKeywords: string[];
+    sourceGrades?: string[];
 }
 
 // ── 학기별 결과 ──

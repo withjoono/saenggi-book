@@ -53,10 +53,10 @@ export class HubAuthGuard implements CanActivate {
 
     try {
       // Hub에 토큰 검증 요청
-      const hubUrl = this.configService.get<string>('HUB_AUTH_URL');
+      const hubUrl = this.configService.get<string>('HUB_AUTH_URL') || this.configService.get<string>('HUB_API_URL');
 
       if (!hubUrl) {
-        throw new Error('HUB_AUTH_URL이 설정되지 않았습니다');
+        throw new Error('HUB_AUTH_URL 또는 HUB_API_URL이 설정되지 않았습니다');
       }
 
       const response = await firstValueFrom(

@@ -25,6 +25,7 @@ export interface IAiEvaluationMaterial {
   score: number;
   relatedKeywords: string[];
   sourceTypes?: string[];
+  sourceGrades?: string[];
 }
 
 export interface IAiEvaluation {

@@ -43,11 +43,25 @@ function buildStorylineContext(evaluation: IAiEvaluation): StorylineContext {
         }
     }
 
-    // advice에서 추천 활동 추출 (조언을 활동 추천으로 활용)
+    // advice에서 추천 활동 추출
     const suggestedActivities: string[] = [];
     if (evaluation.advice) {
         suggestedActivities.push(...evaluation.advice.slice(0, 5));
     }
+
+    // materials 소재 트리 데이터 추출 (EvalMaterialItem 호환 형태로 변환)
+    const materials = evaluation.materials
+        ? evaluation.materials.map(mat => ({
+            title: mat.title,
+            summary: mat.summary,
+            category: mat.category as 'academic' | 'career' | 'community' | 'other',
+            gradeLevel: mat.gradeLevel,
+            score: mat.score || (8 - mat.gradeLevel),
+            relatedKeywords: mat.relatedKeywords || [],
+            sourceGrades: mat.sourceGrades || [],
+            sources: [], // 그래프에서는 직접 소스 배열 대신 sourceGrades를 사용
+        }))
+        : [];
 
     return {
         evaluationId: evaluation.id,
@@ -59,6 +73,7 @@ function buildStorylineContext(evaluation: IAiEvaluation): StorylineContext {
         advice: evaluation.advice || [],
         suggestedActivities,
         currentGrade: evaluation.grade || undefined,
+        materials,
     };
 }
 
@@ -72,7 +87,7 @@ const COMPETENCY_LABELS: Record<string, string> = {
 function SetukBuilderPage() {
     const { data: evaluations, isLoading: isLoadingEvals } = useGetAiEvaluationHistory();
     const [selectedEvalId, setSelectedEvalId] = useState<number | null>(null);
-    const [isSelectOpen, setIsSelectOpen] = useState(false);
+    const [isSelectOpen, setIsSelectOpen] = useState(true);
 
     // 종합 평가 결과만 필터 (학기별 평가는 서사 정보가 부족)
     const comprehensiveEvals = useMemo(() => {
@@ -113,14 +128,14 @@ function SetukBuilderPage() {
                         <div className="text-left">
                             <p className="text-sm font-bold text-gray-800">
                                 {selectedEvalId
-                                    ? "📖 서사 연결 활성"
-                                    : "📎 발달 서사 연결하기 (선택사항)"
+                                    ? "📖 발달 서사 연결 완료"
+                                    : "📎 발달 서사 연결하기 (필수)"
                                 }
                             </p>
                             <p className="text-xs text-gray-500">
                                 {selectedEvalId
                                     ? "AI 분석 결과의 발달 서사를 기반으로 주제를 추천합니다."
-                                    : "기존 AI 평가 결과를 선택하면 서사 흐름에 맞는 주제를 추천받을 수 있습니다."
+                                    : "학생의 성장 흐름(서사)에 맞는 세특을 작성하기 위해, 이전 평가 결과를 반드시 선택해주세요."
                                 }
                             </p>
                         </div>
@@ -131,6 +146,7 @@ function SetukBuilderPage() {
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedEvalId(null);
+                                    setIsSelectOpen(true);
                                 }}
                                 className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                                 title="서사 연결 해제"
@@ -174,7 +190,7 @@ function SetukBuilderPage() {
                                             key={ev.id}
                                             onClick={() => {
                                                 setSelectedEvalId(isSelected ? null : ev.id);
-                                                setIsSelectOpen(false);
+                                                if (!isSelected) setIsSelectOpen(false);
                                             }}
                                             className={cn(
                                                 "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-all",
@@ -197,9 +213,13 @@ function SetukBuilderPage() {
                                                     <span className="text-sm font-bold text-gray-800">
                                                         {ev.grade}학년 종합 평가
                                                     </span>
-                                                    {ev.targetSeries && (
+                                                    {ev.targetSeries ? (
                                                         <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium text-indigo-700">
                                                             {ev.targetSeries}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+                                                            계열 미지정
                                                         </span>
                                                     )}
                                                     <span className="ml-auto text-[10px] text-gray-400 flex-shrink-0">{dateStr}</span>
@@ -234,8 +254,19 @@ function SetukBuilderPage() {
                     </div>
                 )}
             </div>
-            
-            <SetukWizard storylineContext={storylineContext} />
+            {selectedEvalId && storylineContext ? (
+                <SetukWizard storylineContext={storylineContext} />
+            ) : (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 py-16 px-6 text-center">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+                        <Link2 className="h-6 w-6 text-indigo-500" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">어떤 평가를 기반으로 세특을 작성할까요?</h3>
+                    <p className="text-gray-500 max-w-md text-sm">
+                        위 목록에서 대상 학년과 학과(계열)별 평가 내역을 선택해주세요.<br />학생의 기존 발달 서사 흐름에 꼭 맞춘 세특 주제가 추천됩니다.
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
