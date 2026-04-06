@@ -7,7 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import {
   ChartConfig,
   ChartContainer,
@@ -288,3 +288,4 @@ export const PerformanceAnalysis4: React.FC<PerformanceAnalysis4Props> = ({
     </Card>
   );
 };
+

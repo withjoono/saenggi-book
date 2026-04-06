@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from 'geobuk-shared/ui';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils/common/format';
 import { useGetProducts } from '@/stores/server/features/products/queries';
@@ -167,3 +167,4 @@ export function PricingPage() {
     </div>
   );
 }
+

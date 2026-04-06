@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { Button } from "./custom/button";
 import { registerWithEmailFormSchema } from "@/lib/validations/auth";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -528,3 +528,4 @@ export function RegisterWithEmailForm({ className }: Props) {
     </Form>
   );
 }
+

@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "geobuk-shared/ui";
 import {
   Drawer,
   DrawerClose,
@@ -66,3 +66,4 @@ export function ResponsiveDialog({
     </Drawer>
   );
 }
+

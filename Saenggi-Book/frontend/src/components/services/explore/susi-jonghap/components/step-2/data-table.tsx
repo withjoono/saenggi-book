@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "geobuk-shared/ui";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/custom/button";
 import { RiskBadge } from "@/components/custom/risk-badge";
@@ -307,3 +307,4 @@ export const DataTable = ({
     </div>
   );
 };
+

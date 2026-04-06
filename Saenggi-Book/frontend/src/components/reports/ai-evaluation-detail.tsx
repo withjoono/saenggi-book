@@ -4,7 +4,7 @@ import { Button } from "@/components/custom/button";
 import nestApiClient from "@/stores/server/api-client";
 import CompetencyFlowGraph from "@/components/score-visualizations/competency-flow-graph";
 import { CompetencyTimeline as ICompetencyTimeline } from "@/types/analysis.type";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -1082,4 +1082,5 @@ export function AiEvaluationDetail({
     </div>
   );
 }
+
 

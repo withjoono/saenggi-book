@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+} from "geobuk-shared/ui";
+import { Input } from "geobuk-shared/ui";
 import { formatPrice } from "@/lib/utils/common/format";
 import { useGetCurrentUser, meQueryKeys } from "@/stores/server/features/me/queries";
 import { useQueryClient } from "@tanstack/react-query";
@@ -363,3 +363,4 @@ oo_ts;
   return v as string;
 }
 oo_te; /*eslint unicorn/no-abusive-eslint-disable:,eslint-comments/disable-enable-pair:,eslint-comments/no-unlimited-disable:,eslint-comments/no-aggregating-enable:,eslint-comments/no-duplicate-disable:,eslint-comments/no-unused-disable:,eslint-comments/no-unused-enable:,*/
+

@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { Button } from "./custom/button";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -168,3 +168,4 @@ const useImageUpload = () => {
 
   return { image, setImage, imageInput, handleImageClick, handleImageChange };
 };
+

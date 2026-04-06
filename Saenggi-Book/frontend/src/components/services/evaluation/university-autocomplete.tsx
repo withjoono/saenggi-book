@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { cn } from "@/lib/utils";
 import { useGetAllUniversities } from "@/stores/server/features/series-evaluation/queries";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -110,3 +110,4 @@ export function UniversityAutocomplete({
     </div>
   );
 }
+

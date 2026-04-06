@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { Button } from "./custom/button";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChangeEvent, useMemo, useRef, useState } from "react";
@@ -555,3 +555,4 @@ export function RegisterWithSocialForm({ className }: Props) {
     </Form>
   );
 }
+

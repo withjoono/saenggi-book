@@ -1,5 +1,5 @@
 import { Button } from "@/components/custom/button";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/evaluation/")({
@@ -259,3 +259,4 @@ const faqList = [
     body: "자가 평가와 달리 사정관 평가는 평가자 선생님이 해당 계열을 기준으로 많은 자료와 합/불 여부 등을 꼼꼼하게 참고하여 평가하기 때문에 다른 계열로 평가받고 싶다면 다시 신청해야 하니 신중하게 결정해 주세요.",
   },
 ];
+

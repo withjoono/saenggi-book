@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { ISchoolRecordSelectSubject } from "@/stores/server/features/me/interfaces";
 import { ITransformedSubjects } from "@/stores/server/features/static-data/queries";
 import { type ValidationError } from "@/hooks/use-life-record";
@@ -221,3 +221,4 @@ export const SelectSubjectInputItem = React.memo(
     );
   },
 );
+

@@ -1,5 +1,5 @@
 import { RiskBadge } from "@/components/custom/risk-badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { cn } from "@/lib/utils";
 import type { CalculateSeriesEvaluationResponse } from "@/types/series-evaluation.type";
 
@@ -306,3 +306,4 @@ export function SeriesEvaluationResult({
     </div>
   );
 }
+

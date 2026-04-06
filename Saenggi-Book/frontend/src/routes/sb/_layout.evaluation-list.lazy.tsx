@@ -1,7 +1,7 @@
 import { Button } from "@/components/custom/button";
 import { AiEvaluationDetail } from "@/components/reports/ai-evaluation-detail";
 import { RequireLoginMessage } from "@/components/require-login-message";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -112,3 +112,4 @@ function AiEvaluationList() {
     </div>
   );
 }
+

@@ -5,7 +5,7 @@ import React, {
   useRef,
   useEffect,
 } from "react";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { cn } from "@/lib/utils";
 
 interface SearchableDropdownProps {
@@ -100,3 +100,4 @@ export const SearchableDropdown = React.memo(function SearchableDropdown({
     </div>
   );
 });
+

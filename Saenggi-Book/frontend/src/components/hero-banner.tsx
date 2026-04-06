@@ -12,7 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { Button } from "@/components/custom/button";
 import { USER_API } from "@/stores/server/features/me/apis";
 import { PAYMENT_APIS } from "@/stores/server/features/payments/apis";
@@ -327,3 +327,4 @@ export const HeroBanner = () => {
     </div>
   );
 };
+

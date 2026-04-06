@@ -1,6 +1,6 @@
 import { Button } from "@/components/custom/button";
 import { RequireLoginMessage } from "@/components/require-login-message";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { Separator } from "@/components/ui/separator";
 import { formatDateYYYYMMDD } from "@/lib/utils/common/date";
 import { useGetCurrentUser } from "@/stores/server/features/me/queries";
@@ -99,3 +99,4 @@ function OfficerEvaluationList() {
     </div>
   );
 }
+

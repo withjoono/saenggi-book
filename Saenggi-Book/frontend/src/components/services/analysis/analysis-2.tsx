@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ISchoolRecordSubject } from "@/stores/server/features/me/interfaces";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { cn } from "@/lib/utils";
 
 const SUBJECT_CODES = {
@@ -214,3 +214,4 @@ export const PerformanceAnalysis2: React.FC<PerformanceAnalysis2Props> = ({
     </Card>
   );
 };
+

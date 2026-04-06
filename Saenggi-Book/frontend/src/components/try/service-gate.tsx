@@ -4,8 +4,8 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "geobuk-shared/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -377,3 +377,4 @@ export function useTryAction(serviceCode: ServiceCode) {
     executeTryAction,
   };
 }
+

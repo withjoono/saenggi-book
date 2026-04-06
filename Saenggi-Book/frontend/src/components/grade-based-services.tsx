@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { Button } from "@/components/custom/button";
 import { useGradeStore, Grade, gradeThemes, gradeDescriptions } from "@/stores/client/use-grade-store";
 import { cn } from "@/lib/utils";
@@ -111,3 +111,4 @@ export const GradeBasedServices = () => {
     </div>
   );
 };
+

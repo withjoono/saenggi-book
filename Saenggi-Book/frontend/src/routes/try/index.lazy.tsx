@@ -5,8 +5,8 @@
 
 import { Link } from "@tanstack/react-router";
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
+import { Button } from "geobuk-shared/ui";
 import { Badge } from "@/components/ui/badge";
 import {
   IconChartBar,
@@ -239,3 +239,4 @@ function TryIndexPage() {
     </div>
   );
 }
+

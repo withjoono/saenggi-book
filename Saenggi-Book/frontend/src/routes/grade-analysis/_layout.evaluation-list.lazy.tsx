@@ -1,6 +1,6 @@
 import { AiEvaluationDetail } from "@/components/reports/ai-evaluation-detail";
 import { RequireLoginMessage } from "@/components/require-login-message";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatDateYYYYMMDD } from "@/lib/utils/common/date";
@@ -203,3 +203,4 @@ function EvaluationTab({
     </button>
   );
 }
+

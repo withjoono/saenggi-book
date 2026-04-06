@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { ISchoolRecordAttendance } from "@/stores/server/features/me/interfaces";
 import React from "react";
 
@@ -140,3 +140,4 @@ export const AttendanceInputItem = React.memo(
     );
   },
 );
+

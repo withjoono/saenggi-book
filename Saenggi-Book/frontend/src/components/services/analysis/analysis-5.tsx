@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "geobuk-shared/ui";
 import { ISchoolRecordSelectSubject } from "@/stores/server/features/me/interfaces";
 import { cn } from "@/lib/utils";
 
@@ -106,3 +106,4 @@ export const PerformanceAnalysis5: React.FC<PerformanceAnalysis5Props> = ({
     </Card>
   );
 };
+

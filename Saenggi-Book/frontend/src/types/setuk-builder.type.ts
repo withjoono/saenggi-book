@@ -34,7 +34,7 @@ export interface GenerateDraftResponse {
     draft: string;
 }
 
-// === 서사 컨텍스트 통합 인터페이스 ===
+import { EvalMaterialItem } from "./evaluation.type";
 
 /** SetukWizard에 전달하는 서사 컨텍스트 */
 export interface StorylineContext {
@@ -59,4 +59,6 @@ export interface StorylineContext {
     suggestedActivities: string[];
     /** 학생의 현재 학년 */
     currentGrade?: string;
+    /** 소재 트리 데이터 (역량별 소재 목록) */
+    materials?: EvalMaterialItem[];
 }

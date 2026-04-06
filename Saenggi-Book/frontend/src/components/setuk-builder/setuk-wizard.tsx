@@ -1,24 +1,135 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRecommendTopics, useGenerateDraft } from "@/stores/server/features/setuk-builder/mutations";
+import { useGetSubjectList } from "@/stores/server/features/setuk-builder/queries";
 import { RecommendTopicRequestDto, RecommendedTopic, GenerateDraftRequestDto, StorylineContext } from "@/types/setuk-builder.type";
 import { Button } from "@/components/custom/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ArrowRight, CheckCircle2, ChevronRight, Play, BookOpen, Star, RefreshCw, Link2, Sparkles } from "lucide-react";
+import { Loader2, ArrowRight, CheckCircle2, ChevronRight, Play, BookOpen, Star, RefreshCw, Link2, Sparkles, ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { MaterialTree } from "./material-tree";
 
 interface SetukWizardProps {
-    /** 서사 컨텍스트 (선택). 평가 결과에서 전달받은 발달 서사 정보 */
-    storylineContext?: StorylineContext | null;
+    /** 서사 컨텍스트. 평가 결과에서 전달받은 발달 서사 정보 */
+    storylineContext: StorylineContext;
     /** 빌드 페이지에서 넘어온 경우 사전 설정할 과목명 */
     prefilledSubject?: string;
 }
 
+// ── 한글 초성 검색 유틸리티 ──────────────────────────────────
+const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+function getChosung(char: string): string {
+    const code = char.charCodeAt(0) - 0xAC00;
+    if (code < 0 || code > 11171) return char;
+    return CHOSUNG[Math.floor(code / 588)];
+}
+
+function extractChosung(str: string): string {
+    return str.split('').map(getChosung).join('');
+}
+
+function matchesQuery(target: string, query: string): boolean {
+    if (!query) return true;
+    const lower = query.toLowerCase();
+    const targetLower = target.toLowerCase();
+    // 1) 일반 포함 검색
+    if (targetLower.includes(lower)) return true;
+    // 2) 초성 검색 (쿼리가 전부 초성 자모인 경우)
+    const isAllChosung = [...query].every(c => CHOSUNG.includes(c));
+    if (isAllChosung) {
+        const targetChosung = extractChosung(target);
+        return targetChosung.includes(query);
+    }
+    return false;
+}
+
+// ── Subject Combobox ──────────────────────────────────────────
+interface SubjectComboboxProps {
+    value: string;
+    onChange: (val: string) => void;
+    subjects: string[];
+    isLoading: boolean;
+}
+
+function SubjectCombobox({ value, onChange, subjects, isLoading }: SubjectComboboxProps) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState(value);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => { setQuery(value); }, [value]);
+
+    useEffect(() => {
+        function handleOutsideClick(e: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
+
+    const filtered = subjects.filter(s => matchesQuery(s, query)).slice(0, 30);
+
+    return (
+        <div ref={containerRef} className="relative">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <input
+                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-8 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    placeholder={isLoading ? "과목 목록 로딩 중..." : "예: 통합사회, 국어, ㅌ..."}
+                    value={query}
+                    onChange={e => {
+                        setQuery(e.target.value);
+                        onChange(e.target.value);
+                        setOpen(true);
+                    }}
+                    onFocus={() => setOpen(true)}
+                    disabled={isLoading}
+                />
+                <ChevronDown
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer"
+                    onClick={() => setOpen(o => !o)}
+                />
+            </div>
+            {open && filtered.length > 0 && (
+                <div className="absolute z-50 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg max-h-52 overflow-y-auto">
+                    {filtered.map(subject => (
+                        <button
+                            key={subject}
+                            type="button"
+                            className={cn(
+                                "w-full px-3 py-2 text-left text-sm hover:bg-indigo-50 transition-colors",
+                                value === subject && "bg-indigo-50 font-medium text-indigo-700"
+                            )}
+                            onMouseDown={e => {
+                                e.preventDefault();
+                                onChange(subject);
+                                setQuery(subject);
+                                setOpen(false);
+                            }}
+                        >
+                            {subject}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── SetukWizard ───────────────────────────────────────────────
 export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardProps) {
     const [step, setStep] = useState<number>(1);
+
+    // targetSeries에서 목표전공 자동 추출 (마지막 '>' 이후)
+    const autoMajor = storylineContext.targetSeries
+        ? storylineContext.targetSeries.split('>').pop()?.trim() ?? storylineContext.targetSeries
+        : '';
+
     const [data, setData] = useState({
-        major: "",
+        major: autoMajor,
         subject: prefilledSubject || "",
         taskType: "보고서/탐구활동",
         originalTopic: "",
@@ -30,8 +141,10 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
 
     const recommendMutation = useRecommendTopics();
     const draftMutation = useGenerateDraft();
+    const { data: subjects = [], isLoading: isLoadingSubjects } = useGetSubjectList();
 
-    const hasContext = !!storylineContext && storylineContext.storylines.length > 0;
+    const hasContext = storylineContext.storylines.length > 0;
+    const hasMaterials = !!(storylineContext.materials && storylineContext.materials.length > 0);
 
     const handleNext1 = async () => {
         if (!data.major || !data.subject || !data.originalTopic) {
@@ -46,24 +159,11 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
             originalTopic: data.originalTopic,
         };
 
-        // 서사 컨텍스트가 있으면 함께 전달
-        if (storylineContext) {
-            if (storylineContext.storylines.length > 0) {
-                dto.storylines = storylineContext.storylines;
-            }
-            if (storylineContext.storylineKeywords.length > 0) {
-                dto.storylineKeywords = storylineContext.storylineKeywords;
-            }
-            if (storylineContext.weaknesses.length > 0) {
-                dto.weaknesses = storylineContext.weaknesses;
-            }
-            if (storylineContext.suggestedActivities.length > 0) {
-                dto.suggestedActivities = storylineContext.suggestedActivities;
-            }
-            if (storylineContext.currentGrade) {
-                dto.currentGrade = storylineContext.currentGrade;
-            }
-        }
+        if (storylineContext.storylines.length > 0) dto.storylines = storylineContext.storylines;
+        if (storylineContext.storylineKeywords.length > 0) dto.storylineKeywords = storylineContext.storylineKeywords;
+        if (storylineContext.weaknesses.length > 0) dto.weaknesses = storylineContext.weaknesses;
+        if (storylineContext.suggestedActivities.length > 0) dto.suggestedActivities = storylineContext.suggestedActivities;
+        if (storylineContext.currentGrade) dto.currentGrade = storylineContext.currentGrade;
 
         try {
             const result = await recommendMutation.mutateAsync(dto);
@@ -91,8 +191,7 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
             studentActivities: data.activities.split('\n').filter(s => s.trim().length > 0),
         };
 
-        // 서사 키워드 전달
-        if (storylineContext && storylineContext.storylineKeywords.length > 0) {
+        if (storylineContext.storylineKeywords.length > 0) {
             dto.storylineKeywords = storylineContext.storylineKeywords;
         }
 
@@ -114,7 +213,7 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
     const resetWizard = () => {
         setStep(1);
         setData({
-            major: "",
+            major: autoMajor,
             subject: prefilledSubject || "",
             taskType: "보고서/탐구활동",
             originalTopic: "",
@@ -140,23 +239,23 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
                         </span>
                     </div>
                     <p className="text-xs text-gray-600 leading-relaxed">
-                        기존 AI 평가 결과({storylineContext!.targetSeries || '전체'} 관점)의 발달 서사를 기반으로,
+                        기존 AI 평가 결과({storylineContext.targetSeries || '전체'} 관점)의 발달 서사를 기반으로,
                         학생의 성장 흐름에 맞는 수행평가 주제를 추천합니다.
                     </p>
-                    {storylineContext!.weaknesses.length > 0 && (
+                    {storylineContext.weaknesses.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                             <span className="text-[10px] font-medium text-gray-500">보완 영역:</span>
-                            {storylineContext!.weaknesses.slice(0, 3).map((w, i) => (
+                            {storylineContext.weaknesses.slice(0, 3).map((w, i) => (
                                 <span key={i} className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
                                     {w}
                                 </span>
                             ))}
                         </div>
                     )}
-                    {storylineContext!.storylineKeywords.length > 0 && (
+                    {storylineContext.storylineKeywords.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                             <span className="text-[10px] font-medium text-gray-500">성장 키워드:</span>
-                            {storylineContext!.storylineKeywords.slice(0, 5).map((kw, i) => (
+                            {storylineContext.storylineKeywords.slice(0, 5).map((kw, i) => (
                                 <span key={i} className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium text-indigo-700">
                                     {kw}
                                 </span>
@@ -205,6 +304,15 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
             {/* Step 1: Input */}
             {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                    {/* 소재 트리 (서사 연결 시) */}
+                    {hasMaterials && (
+                        <MaterialTree
+                            materials={storylineContext.materials!}
+                            targetSeries={storylineContext.targetSeries}
+                            currentGrade={storylineContext.currentGrade}
+                        />
+                    )}
+
                     <div className="text-center mb-8">
                         <h3 className="text-xl font-bold text-gray-900">학교 수행평가 정보를 알려주세요</h3>
                         <p className="text-sm text-gray-500 mt-2">
@@ -223,14 +331,22 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
                                 value={data.major}
                                 onChange={(e) => setData({ ...data, major: e.target.value })}
                             />
+                            {storylineContext.targetSeries && (
+                                <p className="text-[10px] text-indigo-500 flex items-center gap-1">
+                                    <Link2 className="h-3 w-3" />
+                                    평가 계열({storylineContext.targetSeries})에서 자동 입력됨 · 수정 가능
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-gray-700">📚 대상 과목</label>
-                            <Input
-                                placeholder="예: 통합과학, 동아시아사, 국어"
+                            <SubjectCombobox
                                 value={data.subject}
-                                onChange={(e) => setData({ ...data, subject: e.target.value })}
+                                onChange={(val) => setData({ ...data, subject: val })}
+                                subjects={subjects}
+                                isLoading={isLoadingSubjects}
                             />
+                            <p className="text-[10px] text-gray-400">직접 입력하거나 목록에서 선택 · 초성 검색 지원 (예: ㅌ → 통합사회)</p>
                         </div>
                     </div>
 
@@ -335,7 +451,7 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
                             </div>
                         ))}
                     </div>
-                    
+
                     <div className="flex justify-center pt-4">
                         <Button variant="ghost" className="text-gray-500 hover:text-gray-900" onClick={() => setStep(1)} disabled={draftMutation.isPending}>
                             <RefreshCw className="w-4 h-4 mr-2" />
@@ -432,7 +548,7 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
                         <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-center">
                             <p className="text-xs text-purple-700">
                                 <Link2 className="inline h-3 w-3 mr-1" />
-                                이 세특 초안은 <span className="font-bold">발달 서사({storylineContext!.targetSeries || '전체'})</span>와 연결된
+                                이 세특 초안은 <span className="font-bold">발달 서사({storylineContext.targetSeries || '전체'})</span>와 연결된
                                 키워드가 반영되어, 생기부 전체의 서사 일관성을 높여줍니다.
                             </p>
                         </div>
@@ -452,3 +568,4 @@ export function SetukWizard({ storylineContext, prefilledSubject }: SetukWizardP
         </div>
     );
 }
+

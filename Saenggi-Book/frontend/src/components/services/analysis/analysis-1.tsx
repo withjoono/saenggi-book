@@ -13,7 +13,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "geobuk-shared/ui";
 import { ISchoolRecordSubject } from "@/stores/server/features/me/interfaces";
 import { cn } from "@/lib/utils";
 
@@ -122,3 +122,4 @@ export const PerformanceAnalysis1: React.FC<PerformanceAnalysis1Props> = ({
     </Card>
   );
 };
+

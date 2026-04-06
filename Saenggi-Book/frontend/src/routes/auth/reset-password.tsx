@@ -1,5 +1,5 @@
 import { Button } from "@/components/custom/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { Label } from "@/components/ui/label";
 import {
   useRequestPasswordReset,
@@ -193,3 +193,4 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
+

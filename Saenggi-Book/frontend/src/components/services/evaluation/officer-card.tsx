@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { formatDateYYYYMMDD } from "@/lib/utils/common/date";
 import {
   IOfficerEvaluationItem,
@@ -101,3 +101,4 @@ export const OfficerCard = ({
     </Card>
   );
 };
+

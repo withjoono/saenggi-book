@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "geobuk-shared/ui";
 import { Button } from "@/components/custom/button";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -224,3 +224,4 @@ export const GroupedDataTable = ({
     </div>
   );
 };
+

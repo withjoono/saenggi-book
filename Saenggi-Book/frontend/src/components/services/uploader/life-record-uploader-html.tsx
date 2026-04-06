@@ -14,7 +14,7 @@ import {
   DialogClose,
   DialogContent,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "geobuk-shared/ui";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -145,3 +145,4 @@ const LifeRecordUploaderHTML = ({
 };
 
 export default LifeRecordUploaderHTML;
+

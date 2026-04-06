@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "geobuk-shared/ui";
 import { useState } from "react";
 import { Button } from "@/components/custom/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -234,3 +234,4 @@ export const DataTable = ({
     </div>
   );
 };
+

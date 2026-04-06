@@ -1,5 +1,5 @@
 import { Button } from "@/components/custom/button";
-import { Card } from "@/components/ui/card";
+import { Card } from "geobuk-shared/ui";
 import { Link } from "@tanstack/react-router";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
@@ -204,3 +204,4 @@ const faqList = [
     body: "위험도는 10단계로 결격, 위험, 소신, 적정, 안전으로 평가됩니다. 각 위험도의 기준은 입결, 합불 데이터, 대학별 성적 계산식 등을 통해 전형별로 계산되기 때문에 상위 대학으로 갈수록 위험도 간격이 좁아지는 경향이 있습니다.",
   },
 ];
+

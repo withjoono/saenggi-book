@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/custom/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "geobuk-shared/ui";
 import { useLoginWithEmail } from "@/stores/server/features/auth/mutations";
 
 /**
@@ -149,6 +149,7 @@ export const LoginDebug: React.FC = () => {
     </div>
   );
 };
+
 
 
 
