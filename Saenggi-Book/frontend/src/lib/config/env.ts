@@ -24,9 +24,9 @@ interface EnvConfig {
   // 프론트엔드 URL
   frontUrl: string;
 
-  // 백엔드 API URL (Susi-back)
+  // 백엔드 API URL (Saenggi-Book)
   // 비즈니스 로직 API 호출
-  apiUrlNest: string;
+  apiUrl: string;
 
   // Hub 프론트엔드 URL (전체 서비스로 돌아가기 버튼용)
   hubUrl: string;
@@ -67,8 +67,8 @@ export const env: EnvConfig = {
   // 프론트엔드 URL
   frontUrl: getEnvVar('VITE_FRONT_URL', 'http://localhost:3001'),
 
-  // Susi 백엔드 API URL (개발: 프록시, 프로덕션: 직접 연결)
-  apiUrlNest: isDev ? '/api-nest' : getEnvVar('VITE_API_URL_NEST', 'http://localhost:4001'),
+  // Saenggi-Book 백엔드 API URL (개발: 프록시, 프로덕션: 직접 연결)
+  apiUrl: isDev ? '/api-nest' : getEnvVar('VITE_API_URL', 'http://localhost:4001'),
 
   // Hub 프론트엔드 URL (전체 서비스로 돌아가기 버튼용)
   hubUrl: getEnvVar('VITE_HUB_URL', 'http://localhost:3000'),
@@ -108,7 +108,7 @@ if (env.isDevelopment) {
   console.log('Environment Configuration:', {
     mode: import.meta.env.MODE,
     frontUrl: env.frontUrl,
-    apiUrlNest: env.apiUrlNest, // Susi 백엔드
+    apiUrl: env.apiUrl, // Saenggi-Book 백엔드
     hubUrl: env.hubUrl, // Hub 프론트엔드 (전체 서비스)
     apiUrlHub: env.apiUrlHub, // Hub 인증 서버
   });

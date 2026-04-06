@@ -3156,6 +3156,16 @@ gensync@^1.0.0-beta.2:
   resolved "https://registry.npmjs.org/gensync/-/gensync-1.0.0-beta.2.tgz"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
 
+"geobuk-shared@file:../../geobuk-shared":
+  version "1.0.0"
+  resolved "file:../../geobuk-shared"
+  dependencies:
+    axios ">=1.0.0"
+    clsx "^2.1.1"
+    humps "^2.0.1"
+    tailwind-merge "^2.3.0"
+    tailwindcss-animate "^1.0.7"
+
 get-caller-file@^2.0.5:
   version "2.0.5"
   resolved "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz"
