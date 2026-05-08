@@ -22,9 +22,9 @@ export default defineConfig(() => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api-hub/, ""),
         },
-        // MS 백엔드 (포트 4007)
+        // MS 백엔드 (포트 4001)
         "/api-nest": {
-          target: "http://localhost:4007",
+          target: "http://localhost:4001",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api-nest/, ""),
         },

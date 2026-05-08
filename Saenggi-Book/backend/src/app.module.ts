@@ -54,6 +54,8 @@ import { winstonConfig } from './common/utils/winston.utils';
 import { WinstonModule } from 'nest-winston';
 
 import { SetukBuilderModule } from './modules/setuk-builder/setuk-builder.module';
+import { OpenAlexModule } from './modules/open-alex/open-alex.module';
+import { Neo4jModule } from './database/neo4j/neo4j.module';
 
 @Module({
   imports: [
@@ -137,6 +139,8 @@ import { SetukBuilderModule } from './modules/setuk-builder/setuk-builder.module
     StaticDataModule, // 정적데이터 모듈(교과 코드, 계열 등)
     ExplorationModule,
     SetukBuilderModule,
+    Neo4jModule,    // Neo4j 그래프 DB
+    OpenAlexModule, // OpenAlex - 수행평가 주제 탐색
 
   ],
   controllers: [AppController],

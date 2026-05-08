@@ -72,6 +72,9 @@ const UsersLayoutProfileLazyRouteImport = createFileRoute(
 const UsersLayoutAdditionalFileLazyRouteImport = createFileRoute(
   '/users/_layout/additional-file',
 )()
+const SbLayoutTopicGraphLazyRouteImport = createFileRoute(
+  '/sb/_layout/topic-graph',
+)()
 const SbLayoutSubjectLazyRouteImport = createFileRoute('/sb/_layout/subject')()
 const SbLayoutSetukBuilderLazyRouteImport = createFileRoute(
   '/sb/_layout/setuk-builder',
@@ -416,6 +419,13 @@ const UsersLayoutAdditionalFileLazyRoute =
   } as any).lazy(() =>
     import('./routes/users/_layout/additional-file.lazy').then((d) => d.Route),
   )
+const SbLayoutTopicGraphLazyRoute = SbLayoutTopicGraphLazyRouteImport.update({
+  id: '/topic-graph',
+  path: '/topic-graph',
+  getParentRoute: () => SbLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/sb/_layout.topic-graph.lazy').then((d) => d.Route),
+)
 const SbLayoutSubjectLazyRoute = SbLayoutSubjectLazyRouteImport.update({
   id: '/subject',
   path: '/subject',
@@ -748,6 +758,7 @@ export interface FileRoutesByFullPath {
   '/sb/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/setuk-builder': typeof SbLayoutSetukBuilderLazyRoute
   '/sb/subject': typeof SbLayoutSubjectLazyRoute
+  '/sb/topic-graph': typeof SbLayoutTopicGraphLazyRoute
   '/users/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/profile': typeof UsersLayoutProfileLazyRoute
   '/users/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -820,6 +831,7 @@ export interface FileRoutesByTo {
   '/sb/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/setuk-builder': typeof SbLayoutSetukBuilderLazyRoute
   '/sb/subject': typeof SbLayoutSubjectLazyRoute
+  '/sb/topic-graph': typeof SbLayoutTopicGraphLazyRoute
   '/users/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/profile': typeof UsersLayoutProfileLazyRoute
   '/users/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -902,6 +914,7 @@ export interface FileRoutesById {
   '/sb/_layout/setuk': typeof SbLayoutSetukLazyRoute
   '/sb/_layout/setuk-builder': typeof SbLayoutSetukBuilderLazyRoute
   '/sb/_layout/subject': typeof SbLayoutSubjectLazyRoute
+  '/sb/_layout/topic-graph': typeof SbLayoutTopicGraphLazyRoute
   '/users/_layout/additional-file': typeof UsersLayoutAdditionalFileLazyRoute
   '/users/_layout/profile': typeof UsersLayoutProfileLazyRoute
   '/users/_layout/school-record': typeof UsersLayoutSchoolRecordLazyRoute
@@ -980,6 +993,7 @@ export interface FileRouteTypes {
     | '/sb/setuk'
     | '/sb/setuk-builder'
     | '/sb/subject'
+    | '/sb/topic-graph'
     | '/users/additional-file'
     | '/users/profile'
     | '/users/school-record'
@@ -1052,6 +1066,7 @@ export interface FileRouteTypes {
     | '/sb/setuk'
     | '/sb/setuk-builder'
     | '/sb/subject'
+    | '/sb/topic-graph'
     | '/users/additional-file'
     | '/users/profile'
     | '/users/school-record'
@@ -1133,6 +1148,7 @@ export interface FileRouteTypes {
     | '/sb/_layout/setuk'
     | '/sb/_layout/setuk-builder'
     | '/sb/_layout/subject'
+    | '/sb/_layout/topic-graph'
     | '/users/_layout/additional-file'
     | '/users/_layout/profile'
     | '/users/_layout/school-record'
@@ -1506,6 +1522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersLayoutAdditionalFileLazyRouteImport
       parentRoute: typeof UsersLayoutRoute
     }
+    '/sb/_layout/topic-graph': {
+      id: '/sb/_layout/topic-graph'
+      path: '/topic-graph'
+      fullPath: '/sb/topic-graph'
+      preLoaderRoute: typeof SbLayoutTopicGraphLazyRouteImport
+      parentRoute: typeof SbLayoutRoute
+    }
     '/sb/_layout/subject': {
       id: '/sb/_layout/subject'
       path: '/subject'
@@ -1796,6 +1819,7 @@ interface SbLayoutRouteChildren {
   SbLayoutSetukLazyRoute: typeof SbLayoutSetukLazyRoute
   SbLayoutSetukBuilderLazyRoute: typeof SbLayoutSetukBuilderLazyRoute
   SbLayoutSubjectLazyRoute: typeof SbLayoutSubjectLazyRoute
+  SbLayoutTopicGraphLazyRoute: typeof SbLayoutTopicGraphLazyRoute
 }
 
 const SbLayoutRouteChildren: SbLayoutRouteChildren = {
@@ -1814,6 +1838,7 @@ const SbLayoutRouteChildren: SbLayoutRouteChildren = {
   SbLayoutSetukLazyRoute: SbLayoutSetukLazyRoute,
   SbLayoutSetukBuilderLazyRoute: SbLayoutSetukBuilderLazyRoute,
   SbLayoutSubjectLazyRoute: SbLayoutSubjectLazyRoute,
+  SbLayoutTopicGraphLazyRoute: SbLayoutTopicGraphLazyRoute,
 }
 
 const SbLayoutRouteWithChildren = SbLayoutRoute._addFileChildren(
