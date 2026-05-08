@@ -61,7 +61,7 @@
     "embla-carousel-react": "^8.1.7",
     "firebase": "^10.12.4",
     "framer-motion": "^11.3.17",
-    "geobuk-shared": "npm:@withjoono/geobuk-shared@^1.0.1",
+    "geobuk-shared": "file:../geobuk-shared.tgz",
     "html-to-image": "^1.11.11",
     "humps": "^2.0.1",
     "input-otp": "^1.2.5",
