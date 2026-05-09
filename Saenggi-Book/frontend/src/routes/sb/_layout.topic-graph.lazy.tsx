@@ -88,7 +88,9 @@ function TopicGraphPage() {
       const { data } = await publicClient.get("/open-alex/concepts", {
         params: { search: query, perPage: 10 },
       });
-      setSearchResults(data.data.results);
+      setSearchResults(data?.data?.results ?? []);
+    } catch (err) {
+      console.error("[topic-graph] 검색 실패:", err);
     } finally {
       setSearchLoading(false);
     }
@@ -102,9 +104,13 @@ function TopicGraphPage() {
     setSearchResults([]);
     try {
       const { data } = await publicClient.get(`/open-alex/concepts/${topicId}/graph`);
-      const payload = data.data;
-      setGraphData({ nodes: payload.nodes, edges: payload.edges });
-      setSource(payload.source ?? "");
+      const payload = data?.data;
+      if (payload) {
+        setGraphData({ nodes: payload.nodes, edges: payload.edges });
+        setSource(payload.source ?? "");
+      }
+    } catch (err) {
+      console.error("[topic-graph] 그래프 로드 실패:", err);
     } finally {
       setGraphLoading(false);
     }
