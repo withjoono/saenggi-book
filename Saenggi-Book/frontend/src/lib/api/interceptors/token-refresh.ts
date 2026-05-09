@@ -54,8 +54,7 @@ const handleLogout = () => {
   }
 
   clearTokens();
-  // Hub Firebase 로그인으로 리다이렉트
-  window.location.href = 'http://localhost:3000/auth/login';
+  window.location.href = '/auth/login';
 };
 
 /**
