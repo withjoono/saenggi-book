@@ -29,6 +29,10 @@ jobs:
         working-directory: backend
         run: npm install
 
+      - name: Restore app.yaml from secret
+        working-directory: backend
+        run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
+
       - name: Deploy to App Engine
         working-directory: backend
         run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet
