@@ -306,6 +306,13 @@ export const SbHeader = () => {
                     >
                       ✨ 세특 마법사
                     </Link>
+                    <Link
+                      to="/sb/topic-graph"
+                      className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start px-1 text-olive-600 hover:bg-olive-50 font-bold")}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      🔗 주제 탐색 그래프
+                    </Link>
                   </div>
 
                   <Separator className="my-2 bg-gray-200" />
@@ -522,9 +529,10 @@ export const SbHeader = () => {
                     빌드업
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="p-2 md:w-[180px]">
+                    <div className="p-2 md:w-[200px]">
                       <div className="flex flex-col gap-1">
                         <Link to="/sb/setuk-builder" className="flex items-center rounded-lg px-3 py-2 hover:bg-olive-50 font-bold text-olive-600">✨ 세특 마법사</Link>
+                        <Link to="/sb/topic-graph" className="flex items-center rounded-lg px-3 py-2 hover:bg-olive-50 font-bold text-olive-600">🔗 주제 탐색 그래프</Link>
                       </div>
                     </div>
                   </NavigationMenuContent>
