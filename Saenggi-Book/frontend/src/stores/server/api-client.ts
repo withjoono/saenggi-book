@@ -15,7 +15,7 @@ const getBaseUrl = (_type: 'nest' | 'spring'): string => {
     // Spring은 더 이상 사용하지 않음
     return '/api-nest';
   }
-  return env.apiUrlNest;
+  return env.apiUrl;
 };
 
 // 토큰 갱신 진행 중 플래그 (중복 갱신 방지)

@@ -384,15 +384,26 @@ export class AuthService {
           ),
       );
 
-      const tokenData = response.data.data || response.data;
+      const hubData = response.data.data || response.data;
+      const memberId = hubData.memberId;
 
-      this.logger.info('[SSO 코드 교환 성공] Hub에서 토큰을 받았습니다');
+      if (!memberId) {
+        throw new UnauthorizedException('SSO 인증 정보가 올바르지 않습니다.');
+      }
+
+      // MySanggibu 전용 토큰 직접 발급
+      const accessToken = this.jwtService.createAccessToken(memberId);
+      const refreshToken = this.jwtService.createRefreshToken(memberId);
+      const tokenExpiry = this.jwtService.getTokenExpiryTime();
+      const activeServices = await this.membersService.findActiveServicesById(memberId);
+
+      this.logger.info(`[SSO 코드 교환 성공] MySanggibu 토큰 발급 완료 (memberId=${memberId})`);
 
       return {
-        accessToken: tokenData.accessToken,
-        refreshToken: tokenData.refreshToken,
-        tokenExpiry: tokenData.tokenExpiry,
-        activeServices: tokenData.activeServices || [],
+        accessToken,
+        refreshToken,
+        tokenExpiry,
+        activeServices,
       };
     } catch (error) {
       this.logger.error(`[SSO 코드 교환 실패] ${error.message}`);

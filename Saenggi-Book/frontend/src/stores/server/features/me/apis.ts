@@ -1,4 +1,5 @@
 import { hubApiClient } from "../../hub-api-client";
+import { authClient } from "@/lib/api";
 import {
   ISchoolRecordAttendance,
   ISchoolRecordBehaviorOpinion,
@@ -28,20 +29,24 @@ const extractHubApiData = <T>(responseData: any): T => {
  * SSO 토큰은 Hub에서 발급되므로 Hub 서버에서만 검증 가능합니다.
  */
 const fetchCurrentUserAPI = async (): Promise<IUser | null> => {
-  // 토큰이 없으면 API 호출 없이 바로 null 반환 (게스트 사용자 401 방지)
   const token = localStorage.getItem('accessToken');
   if (!token) {
     return null;
   }
 
   try {
-    const res = await hubApiClient.get("/auth/me");
-    const userData = extractHubApiData<IUser>(res.data);
-    console.log('[fetchCurrentUserAPI] 사용자 정보:', userData);
-    return userData;
-  } catch (error) {
-    console.warn('[fetchCurrentUserAPI] 사용자 정보 조회 실패:', error);
-    return null;
+    // Saenggi-Book 백엔드의 /auth/me 사용 (자체 JWT 검증)
+    const res = await authClient.get("/auth/me");
+    return extractHubApiData<IUser>(res.data);
+  } catch (error: any) {
+    const status = error?.response?.status;
+    if (!status || status === 401 || status === 403) {
+      console.warn('[fetchCurrentUserAPI] 인증 실패:', error);
+      return null;
+    }
+    // 5xx 서버 오류: throw → React Query가 이전 캐시 유지 (로그아웃 방지)
+    console.warn('[fetchCurrentUserAPI] 서버 오류, 기존 로그인 상태 유지:', status);
+    throw error;
   }
 };
 

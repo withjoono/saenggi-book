@@ -16,7 +16,7 @@ import { env } from '@/lib/config/env';
  * - 로그인, 회원가입, 공개 데이터 등
  */
 export const publicClient = axios.create({
-  baseURL: env.apiUrlNest,
+  baseURL: env.apiUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ export const publicClient = axios.create({
  * - 모든 인증된 API 요청
  */
 export const authClient = axios.create({
-  baseURL: env.apiUrlNest,
+  baseURL: env.apiUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

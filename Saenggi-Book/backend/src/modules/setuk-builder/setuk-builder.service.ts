@@ -3,13 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { RecommendTopicDto } from './dto/recommend-topic.dto';
 import { GenerateDraftDto } from './dto/generate-draft.dto';
+import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class SetukBuilderService {
     private readonly logger = new Logger(SetukBuilderService.name);
     private genAI: GoogleGenerativeAI | null = null;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly prisma: PrismaService,
+    ) {
         const apiKey = this.configService.get<string>('GEMINI_API_KEY');
         if (apiKey) {
             this.genAI = new GoogleGenerativeAI(apiKey);
@@ -166,5 +170,21 @@ ${keywordsContext}
         const response = await model.generateContent(prompt);
         const text = response.response.text();
         return JSON.parse(text);
+    }
+
+    /**
+     * 2022 교과 과목명 목록 조회 (hub_2022_kyokwa_subject)
+     * 대상과목 자동완성용
+     */
+    async getSubjectList(): Promise<string[]> {
+        const rows = await this.prisma.hub_2022_kyokwa_subject.findMany({
+            select: { subject_name: true },
+            where: { subject_name: { not: null } },
+            distinct: ['subject_name'],
+            orderBy: { subject_name: 'asc' },
+        });
+        return rows
+            .map(r => r.subject_name)
+            .filter((n): n is string => !!n);
     }
 }

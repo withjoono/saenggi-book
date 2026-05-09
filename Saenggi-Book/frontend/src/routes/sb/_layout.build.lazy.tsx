@@ -19,6 +19,7 @@ import {
     ACTIVITY_TYPE_LABELS,
     PRIORITY_LABELS,
 } from "@/types/build.type";
+import { joinStudyGroupAutomatically } from "@/stores/server/features/hub-group/api";
 
 export const Route = createLazyFileRoute("/sb/_layout/build")({
     component: BuildPage,
@@ -327,6 +328,23 @@ function BuildPage() {
             const buildResult = res.data?.data as BuildAnalysisResult;
             setResult(buildResult);
             setActiveTab('gap');
+
+            // 🎯 Hub에 알려서 '수능/수시 파이터반'에 자동 배치!
+            // admissionType 기반으로 appType 판별
+            const appType = (admissionType === '학종' || admissionType === '교과') ? 'susi' : 'jungsi';
+            const gradeMapping: Record<string, string> = {
+                "1": "H1",
+                "2": "H2",
+                "3": "H3"
+            };
+            const mappedGrade = gradeMapping[currentGrade] || `H${currentGrade}`;
+            
+            await joinStudyGroupAutomatically(
+                appType, 
+                mappedGrade, 
+                `${targetUniversity.trim()} ${targetMajor.trim()}`
+            );
+
         } catch (err: any) {
             console.error("빌드 분석 실패:", err);
             setError(err?.response?.data?.message || err?.message || "빌드 분석에 실패했습니다.");
