@@ -30,6 +30,19 @@
           working-directory: Saenggi-Book/backend
           run: npm install
 
+        - name: Install Cloud SQL Auth Proxy
+          run: |
+            curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.9.0/cloud-sql-proxy.linux.amd64
+            chmod +x cloud-sql-proxy
+            sudo mv cloud-sql-proxy /usr/local/bin/
+
+        - name: Start Cloud SQL Auth Proxy
+          run: |
+            cloud-sql-proxy --port 5434 
+            ts-back-nest-479305:asia-northeast3:geobuk-db & sleep 5
+
+        - name: Run Prisma migrations working-directory: Saenggi-Book/backend
+        
         - name: Restore app.yaml from secret
           working-directory: Saenggi-Book/backend
           run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
