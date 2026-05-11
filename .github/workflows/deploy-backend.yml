@@ -36,4 +36,4 @@
 
         - name: Deploy to App Engine
           working-directory: Saenggi-Book/backend
-          run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet 
+          run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet --version stable 
