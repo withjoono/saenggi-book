@@ -37,46 +37,75 @@ export class MembersService {
     }
   }
 
-  // JWT sub = Hub member ID (VarChar) → sv_auth_member.hub_member_id (BigInt) 로 조회
+  // JWT sub = Hub member ID (alphanumeric VarChar) -> hub.auth_member에서 직접 조회
   async findOneById(id: string | number): Promise<any | null> {
-    const results = await this.prisma.$queryRaw<any[]>`
-      SELECT * FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(id))} LIMIT 1
-    `;
-    return results.length > 0 ? results[0] : null;
+    try {
+      const results = await this.prisma.$queryRaw<any[]>`
+        SELECT id, email, nickname, member_type, phone FROM hub.auth_member WHERE id = ${String(id)} LIMIT 1
+      `;
+      return results.length > 0 ? results[0] : null;
+    } catch (error) {
+      this.logger.warn(`findOneById failed: ${error.message}`);
+      return null;
+    }
   }
 
+  // /auth/me: hub.auth_member 기반, sv_auth_member Saenggi-Book 전용 필드는 이메일로 fallback 조회
   async findMeById(id: string | number): Promise<any | null> {
-    const results = await this.prisma.$queryRaw<any[]>`
-      SELECT id, email, nickname, hst_type_id, graduate_year, major, member_type, hub_member_id
-      FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(id))} LIMIT 1
-    `;
-    if (results.length === 0) return null;
-    const row = results[0];
-    // sv_auth_member는 Hub 인증 기반이므로 일부 필드는 기본값 반환
-    return {
-      ...row,
-      role_type: 'ROLE_USER',
-      phone: null,
-      ck_sms_agree: false,
-      s_type_id: null,
-      g_type_id: null,
-    };
+    try {
+      const hubResults = await this.prisma.$queryRaw<any[]>`
+        SELECT id, email, nickname, member_type, phone FROM hub.auth_member WHERE id = ${String(id)} LIMIT 1
+      `;
+      if (hubResults.length === 0) return null;
+      const hubRow = hubResults[0];
+
+      let svRow: any = null;
+      if (hubRow.email) {
+        try {
+          const svResults = await this.prisma.$queryRaw<any[]>`
+            SELECT hst_type_id, graduate_year, major FROM sv_auth_member WHERE email = ${hubRow.email} LIMIT 1
+          `;
+          if (svResults.length > 0) svRow = svResults[0];
+        } catch (_) {
+          // sv_auth_member 조회 실패 무시
+        }
+      }
+
+      return {
+        id: hubRow.id,
+        email: hubRow.email,
+        nickname: hubRow.nickname,
+        member_type: hubRow.member_type,
+        hub_member_id: hubRow.id,
+        hst_type_id: svRow?.hst_type_id ?? null,
+        graduate_year: svRow?.graduate_year ?? null,
+        major: svRow?.major ?? null,
+        role_type: 'ROLE_USER',
+        phone: hubRow.phone ?? null,
+        ck_sms_agree: false,
+        s_type_id: null,
+        g_type_id: null,
+      };
+    } catch (error) {
+      this.logger.warn(`findMeById failed for ${id}: ${error.message}`);
+      return null;
+    }
   }
 
   async findActiveServicesById(memberId: string | number): Promise<string[]> {
-    // 테스트 계정은 모든 서비스 이용 가능
     const testAccountEmails = ['test@test.com', 'admin@test.com', 'test2@test.com', 'test3@test.com'];
-    let members: any[] = [];
+    let email: string | null = null;
 
     try {
-      members = await this.prisma.$queryRaw<any[]>`
-        SELECT email FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(memberId))} LIMIT 1
+      const members = await this.prisma.$queryRaw<any[]>`
+        SELECT email FROM hub.auth_member WHERE id = ${String(memberId)} LIMIT 1
       `;
+      if (members.length > 0) email = members[0].email;
     } catch (error) {
       this.logger.warn(`findActiveServicesById - Member lookup failed for ${memberId}: ${error.message}`);
     }
 
-    if (members.length > 0 && testAccountEmails.includes(members[0].email)) {
+    if (email && testAccountEmails.includes(email)) {
       return ['S', 'J', 'T'];
     }
 
@@ -100,7 +129,7 @@ export class MembersService {
   async findOneByOAuthId(oauthId: string): Promise<any | null> {
     try {
       const results = await this.prisma.$queryRaw<any[]>`
-        SELECT * FROM sv_auth_member WHERE hub_member_id = ${BigInt(oauthId)} LIMIT 1
+        SELECT * FROM hub.auth_member WHERE id = ${oauthId} LIMIT 1
       `;
       return results.length > 0 ? results[0] : null;
     } catch (error) {
@@ -110,12 +139,10 @@ export class MembersService {
   }
 
   async findOneByPhone(phone: string): Promise<any | null> {
-    // phone 컬럼은 sv_auth_member에 없음 - null 반환
     return null;
   }
 
   async saveMemberByEmail(data: RegisterWithEmailDto): Promise<any | null> {
-    // 이메일 직접 가입은 Hub 전환 후 지원하지 않음
     throw new Error('이메일 직접 가입은 Hub를 통해 진행해주세요.');
   }
 
@@ -123,7 +150,6 @@ export class MembersService {
     data: RegisterWithSocialDto,
     socialUser: SocialUser,
   ): Promise<any | null> {
-    // 소셜 직접 가입은 Hub 전환 후 지원하지 않음
     throw new Error('소셜 가입은 Hub를 통해 진행해주세요.');
   }
 
@@ -135,22 +161,38 @@ export class MembersService {
 
     const majorVal = updateData.major !== undefined
       ? (updateData.major === 0 ? 'LiberalArts' : 'NaturalSciences')
-      : member.major;
+      : null;
 
-    const graduateYear = updateData.graduate_year !== undefined ? updateData.graduate_year : member.graduate_year;
-    const hstTypeId = updateData.hst_type_id !== undefined ? String(updateData.hst_type_id) : member.hst_type_id;
+    const graduateYear = updateData.graduate_year !== undefined ? updateData.graduate_year : null;
+    const hstTypeId = updateData.hst_type_id !== undefined ? String(updateData.hst_type_id) : null;
 
-    const results = await this.prisma.$queryRaw<any[]>`
-      UPDATE sv_auth_member
-      SET major = ${majorVal}, graduate_year = ${graduateYear}, hst_type_id = ${hstTypeId}, update_dt = NOW()
-      WHERE hub_member_id = ${BigInt(memberId)}
-      RETURNING *
-    `;
-    return results.length > 0 ? results[0] : member;
+    if (member.email) {
+      try {
+        await this.prisma.$queryRaw<any[]>`
+          INSERT INTO sv_auth_member (email, member_type, hub_member_id, account_stop_yn, create_dt, update_dt,
+            major, graduate_year, hst_type_id)
+          VALUES (${member.email}, ${member.member_type}, 0, 'N', NOW(), NOW(),
+            ${majorVal}, ${graduateYear}, ${hstTypeId})
+          ON CONFLICT (email) DO UPDATE SET
+            major = COALESCE(EXCLUDED.major, sv_auth_member.major),
+            graduate_year = COALESCE(EXCLUDED.graduate_year, sv_auth_member.graduate_year),
+            hst_type_id = COALESCE(EXCLUDED.hst_type_id, sv_auth_member.hst_type_id),
+            update_dt = NOW()
+        `;
+      } catch (error) {
+        this.logger.warn(`editProfile sv_auth_member upsert failed: ${error.message}`);
+      }
+    }
+
+    return {
+      ...member,
+      major: majorVal ?? member.major,
+      graduate_year: graduateYear ?? member.graduate_year,
+      hst_type_id: hstTypeId ?? member.hst_type_id,
+    };
   }
 
   async findOneByEmailAndPhone(email: string, phone: string): Promise<any | null> {
-    // phone 컬럼은 sv_auth_member에 없으므로 email로만 조회
     const results = await this.prisma.$queryRaw<any[]>`
       SELECT * FROM sv_auth_member WHERE email = ${email} LIMIT 1
     `;
@@ -158,7 +200,6 @@ export class MembersService {
   }
 
   async updatePassword(memberId: string | number, newPassword: string): Promise<void> {
-    // password 컬럼은 sv_auth_member에 없음 - Hub에서 비밀번호 관리
     this.logger.warn(`updatePassword called for member ${memberId} but sv_auth_member has no password column`);
   }
 
@@ -168,17 +209,14 @@ export class MembersService {
     phone: string;
     hubMemberId: string;
   }): Promise<any> {
-    // 기존 회원 확인 (hub_member_id 기준)
-    const existing = await this.prisma.$queryRaw<any[]>`
-      SELECT * FROM sv_auth_member WHERE hub_member_id = ${BigInt(data.hubMemberId)} LIMIT 1
-    `;
-    if (existing.length > 0) return existing[0];
-
-    const results = await this.prisma.$queryRaw<any[]>`
-      INSERT INTO sv_auth_member (email, nickname, hub_member_id, member_type, account_stop_yn, create_dt, update_dt)
-      VALUES (${data.email}, ${data.nickname}, ${BigInt(data.hubMemberId)}, 'student', 'N', NOW(), NOW())
-      RETURNING *
-    `;
-    return results[0];
+    try {
+      const existing = await this.prisma.$queryRaw<any[]>`
+        SELECT * FROM hub.auth_member WHERE id = ${data.hubMemberId} LIMIT 1
+      `;
+      if (existing.length > 0) return existing[0];
+    } catch (error) {
+      this.logger.warn(`createMemberFromOAuth lookup failed: ${error.message}`);
+    }
+    return { id: data.hubMemberId, email: data.email, nickname: data.nickname, member_type: 'student' };
   }
 }
