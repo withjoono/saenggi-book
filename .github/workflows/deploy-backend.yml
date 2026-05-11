@@ -1,34 +1,39 @@
-name: Deploy Backend
+  name: Deploy Backend
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'Saenggi-Book/backend/**'
-      - '.github/workflows/deploy-backend.yml'
+  on:
+    push:
+      branches: [main]
+      paths:
+        - 'Saenggi-Book/backend/**'
+        - '.github/workflows/deploy-backend.yml'
+    workflow_dispatch:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+        - name: Authenticate to Google Cloud
+          uses: google-github-actions/auth@v2
+          with:
+            credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Setup Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        - name: Setup Cloud SDK
+          uses: google-github-actions/setup-gcloud@v2
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        - uses: actions/setup-node@v4
+          with:
+            node-version: 20
 
-      - name: Install dependencies
-        working-directory: Saenggi-Book/backend
-        run: npm install
+        - name: Install dependencies
+          working-directory: Saenggi-Book/backend
+          run: npm install
 
-      - name: Deploy to App Engine
-        working-directory: Saenggi-Book/backend
-        run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet
+        - name: Restore app.yaml from secret
+          working-directory: Saenggi-Book/backend
+          run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
+
+        - name: Deploy to App Engine
+          working-directory: Saenggi-Book/backend
+          run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet 
