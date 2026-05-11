@@ -37,9 +37,10 @@ export class MembersService {
     }
   }
 
+  // JWT sub = Hub member ID (VarChar) → sv_auth_member.hub_member_id (BigInt) 로 조회
   async findOneById(id: string | number): Promise<any | null> {
     const results = await this.prisma.$queryRaw<any[]>`
-      SELECT * FROM sv_auth_member WHERE id = ${String(id)} LIMIT 1
+      SELECT * FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(id))} LIMIT 1
     `;
     return results.length > 0 ? results[0] : null;
   }
@@ -47,7 +48,7 @@ export class MembersService {
   async findMeById(id: string | number): Promise<any | null> {
     const results = await this.prisma.$queryRaw<any[]>`
       SELECT id, email, nickname, hst_type_id, graduate_year, major, member_type, hub_member_id
-      FROM sv_auth_member WHERE id = ${String(id)} LIMIT 1
+      FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(id))} LIMIT 1
     `;
     if (results.length === 0) return null;
     const row = results[0];
@@ -69,7 +70,7 @@ export class MembersService {
 
     try {
       members = await this.prisma.$queryRaw<any[]>`
-        SELECT email FROM sv_auth_member WHERE id = ${String(memberId)} LIMIT 1
+        SELECT email FROM sv_auth_member WHERE hub_member_id = ${BigInt(String(memberId))} LIMIT 1
       `;
     } catch (error) {
       this.logger.warn(`findActiveServicesById - Member lookup failed for ${memberId}: ${error.message}`);
@@ -142,7 +143,7 @@ export class MembersService {
     const results = await this.prisma.$queryRaw<any[]>`
       UPDATE sv_auth_member
       SET major = ${majorVal}, graduate_year = ${graduateYear}, hst_type_id = ${hstTypeId}, update_dt = NOW()
-      WHERE id = ${memberId}
+      WHERE hub_member_id = ${BigInt(memberId)}
       RETURNING *
     `;
     return results.length > 0 ? results[0] : member;
