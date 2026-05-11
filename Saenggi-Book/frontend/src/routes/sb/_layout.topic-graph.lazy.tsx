@@ -5,22 +5,25 @@ import { publicClient } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, BookOpen, Network, Maximize2, X } from "lucide-react";
+import { Search, Loader2, BookOpen, Network, Maximize2, X, List, ArrowLeft } from "lucide-react";
 
 export const Route = createLazyFileRoute("/sb/_layout/topic-graph")({
   component: TopicGraphPage,
 });
 
 // ── 타입 ─────────────────────────────────────────────────────────────────────
+interface HierarchyItem { id: string; label: string; }
+
 interface TopicResult {
   id: string;
   label: string;
   labelEn?: string;
   worksCount: number;
-  domain?: string;
-  field?: string;
-  subfield?: string;
+  domain: HierarchyItem;
+  field: HierarchyItem;
+  subfield: HierarchyItem;
   keywords?: string[];
+  description?: string;
 }
 
 interface GraphNode {
@@ -31,7 +34,6 @@ interface GraphNode {
   worksCount?: number;
   description?: string;
   keywords?: string[];
-  // force-graph 내부 위치 (런타임에 추가됨)
   x?: number;
   y?: number;
 }
@@ -42,7 +44,7 @@ interface GraphEdge {
   type: "hierarchy" | "sibling";
 }
 
-// ── 색상 ─────────────────────────────────────────────────────────────────────
+// ── 상수 ─────────────────────────────────────────────────────────────────────
 const NODE_COLORS: Record<GraphNode["type"], string> = {
   domain: "#1e3a5f",
   field: "#2563eb",
@@ -52,12 +54,51 @@ const NODE_COLORS: Record<GraphNode["type"], string> = {
 };
 
 const NODE_RADIUS: Record<GraphNode["type"], number> = {
-  domain: 10,
-  field: 8,
-  subfield: 7,
-  topic: 9,
-  sibling: 5,
+  domain: 12,
+  field: 9,
+  subfield: 8,
+  topic: 10,
+  sibling: 6,
 };
+
+const NODE_LABELS: Record<GraphNode["type"], string> = {
+  domain: "대분야",
+  field: "분야",
+  subfield: "세부분야",
+  topic: "주제",
+  sibling: "연관주제",
+};
+
+// ── 검색 결과 → 그래프 변환 ───────────────────────────────────────────────────
+function buildSearchGraph(results: TopicResult[]): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  const nodes: GraphNode[] = [];
+  const edges: GraphEdge[] = [];
+  const seenNodes = new Set<string>();
+  const seenEdges = new Set<string>();
+
+  const addNode = (node: GraphNode) => {
+    if (!seenNodes.has(node.id)) { seenNodes.add(node.id); nodes.push(node); }
+  };
+  const addEdge = (e: GraphEdge) => {
+    const key = `${e.source}->${e.target}`;
+    if (!seenEdges.has(key)) { seenEdges.add(key); edges.push(e); }
+  };
+
+  for (const r of results) {
+    addNode({ id: r.domain.id, label: r.domain.label, type: "domain" });
+    addNode({ id: r.field.id, label: r.field.label, type: "field" });
+    addNode({ id: r.subfield.id, label: r.subfield.label, type: "subfield" });
+    addNode({
+      id: r.id, label: r.label, labelEn: r.labelEn, type: "topic",
+      worksCount: r.worksCount, keywords: r.keywords, description: r.description,
+    });
+    addEdge({ source: r.domain.id, target: r.field.id, type: "hierarchy" });
+    addEdge({ source: r.field.id, target: r.subfield.id, type: "hierarchy" });
+    addEdge({ source: r.subfield.id, target: r.id, type: "hierarchy" });
+  }
+
+  return { nodes, edges };
+}
 
 // ── 컴포넌트 ─────────────────────────────────────────────────────────────────
 function TopicGraphPage() {
@@ -68,37 +109,49 @@ function TopicGraphPage() {
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; edges: GraphEdge[] } | null>(null);
   const [selected, setSelected] = useState<GraphNode | null>(null);
   const [source, setSource] = useState<string>("");
+  const [mode, setMode] = useState<"idle" | "search" | "detail">("idle");
 
   const [searchLoading, setSearchLoading] = useState(false);
   const [graphLoading, setGraphLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showList, setShowList] = useState(false);
 
-  // 그래프 데이터 변경 시 force 재설정
+  // force 파라미터 — 검색 모드는 넓게, 상세 모드는 촘촘하게
   useEffect(() => {
     if (!graphData || !graphRef.current) return;
     const fg = graphRef.current as any;
-    fg.d3Force("charge")?.strength(-400);
-    fg.d3Force("link")?.distance(120);
+    const isSearch = mode === "search";
+    fg.d3Force("charge")?.strength(isSearch ? -600 : -400);
+    fg.d3Force("link")?.distance(isSearch ? 160 : 120);
     fg.d3Force("center")?.strength(0.05);
-  }, [graphData]);
+  }, [graphData, mode]);
 
-  // 전체화면 전환 시 그래프 크기 재조정
+  // 전체화면 전환 시 재조정
   useEffect(() => {
     if (!graphRef.current) return;
     const timer = setTimeout(() => graphRef.current?.zoomToFit(400, 60), 100);
     return () => clearTimeout(timer);
   }, [isFullscreen]);
 
-  // 검색
+  // ── 검색 → 즉시 그래프 표시
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
     setSearchLoading(true);
+    setGraphData(null);
+    setSelected(null);
     setSearchResults([]);
+    setShowList(false);
     try {
       const { data } = await publicClient.get("/open-alex/concepts", {
-        params: { search: query, perPage: 10 },
+        params: { search: query, perPage: 25 },
       });
-      setSearchResults(data?.data?.results ?? []);
+      const results: TopicResult[] = data?.data?.results ?? [];
+      setSearchResults(results);
+      if (results.length > 0) {
+        setGraphData(buildSearchGraph(results));
+        setSource("search");
+        setMode("search");
+      }
     } catch (err) {
       console.error("[topic-graph] 검색 실패:", err);
     } finally {
@@ -106,18 +159,19 @@ function TopicGraphPage() {
     }
   }, [query]);
 
-  // 그래프 로드
+  // ── 주제 상세 그래프 로드
   const loadGraph = useCallback(async (topicId: string) => {
     setGraphLoading(true);
     setGraphData(null);
     setSelected(null);
-    setSearchResults([]);
+    setShowList(false);
     try {
       const { data } = await publicClient.get(`/open-alex/concepts/${topicId}/graph`);
       const payload = data?.data;
       if (payload) {
         setGraphData({ nodes: payload.nodes, edges: payload.edges });
         setSource(payload.source ?? "");
+        setMode("detail");
       }
     } catch (err) {
       console.error("[topic-graph] 그래프 로드 실패:", err);
@@ -126,17 +180,26 @@ function TopicGraphPage() {
     }
   }, []);
 
-  // 노드 클릭
+  // ── 검색 결과 그래프로 돌아가기
+  const backToSearch = useCallback(() => {
+    if (searchResults.length === 0) return;
+    setGraphData(buildSearchGraph(searchResults));
+    setSource("search");
+    setMode("search");
+    setSelected(null);
+  }, [searchResults]);
+
+  // ── 노드 클릭
   const handleNodeClick = useCallback((node: GraphNode) => {
     setSelected(node);
     graphRef.current?.centerAt(node.x ?? 0, node.y ?? 0, 400);
-    graphRef.current?.zoom(2, 400);
-
-    // topic 클릭 시 하위 그래프 로드
+    graphRef.current?.zoom(2.5, 400);
     if (node.type === "topic" || node.type === "sibling") {
       loadGraph(node.id);
     }
   }, [loadGraph]);
+
+  const isDetailMode = mode === "detail";
 
   return (
     <div className="flex flex-col gap-4">
@@ -155,40 +218,52 @@ function TopicGraphPage() {
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           className="max-w-md"
         />
-        <Button onClick={handleSearch} disabled={searchLoading}>
+        <Button onClick={handleSearch} disabled={searchLoading || graphLoading}>
           {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           검색
         </Button>
+        {/* 상세 모드에서 검색 결과로 복귀 */}
+        {isDetailMode && searchResults.length > 0 && (
+          <Button variant="outline" onClick={backToSearch}>
+            <ArrowLeft className="h-4 w-4" />
+            검색 결과
+          </Button>
+        )}
+        {/* 목록 토글 */}
+        {searchResults.length > 0 && (
+          <Button variant="ghost" size="icon" onClick={() => setShowList(v => !v)} title="목록 보기">
+            <List className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
-      {/* 검색 결과 목록 */}
-      {searchResults.length > 0 && (
+      {/* 검색 결과 수 / 안내 */}
+      {mode === "search" && searchResults.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          검색 결과 <strong>{searchResults.length}개</strong> · 빨간 주제 노드를 클릭하면 상세 그래프로 이동합니다
+        </p>
+      )}
+
+      {/* 목록 패널 (토글) */}
+      {showList && searchResults.length > 0 && (
         <div className="rounded-lg border bg-background p-3 shadow-sm">
-          <p className="mb-2 text-sm text-muted-foreground">주제를 클릭하면 그래프를 불러옵니다</p>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
             {searchResults.map((r) => (
               <button
                 key={r.id}
-                onClick={() => loadGraph(r.id)}
+                onClick={() => { loadGraph(r.id); setShowList(false); }}
                 className="flex items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted"
               >
                 <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">{r.label}</p>
+                  <p className="font-medium text-sm">{r.label}</p>
                   {r.labelEn && r.labelEn !== r.label && (
                     <p className="text-xs text-muted-foreground/70 italic">{r.labelEn}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {[r.domain, r.field, r.subfield].filter(Boolean).join(" › ")}
+                    {[r.domain.label, r.field.label, r.subfield.label].join(" › ")}
                     {r.worksCount > 0 && ` · 논문 ${r.worksCount.toLocaleString()}편`}
                   </p>
-                  {r.keywords && r.keywords.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {r.keywords.slice(0, 4).map((k) => (
-                        <Badge key={k} variant="secondary" className="text-xs">{k}</Badge>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </button>
             ))}
@@ -203,24 +278,28 @@ function TopicGraphPage() {
             ? "fixed inset-0 z-50 bg-slate-950"
             : "relative overflow-hidden rounded-xl border bg-slate-950 shadow-inner"
         }
-        style={isFullscreen ? undefined : { height: 560 }}
+        style={isFullscreen ? undefined : { height: 580 }}
       >
         {/* 범례 */}
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-lg bg-black/50 px-3 py-2 text-xs text-white">
           {(Object.entries(NODE_COLORS) as [GraphNode["type"], string][]).map(([type, color]) => (
             <div key={type} className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ background: color }} />
-              <span className="capitalize">{type}</span>
+              <span>{NODE_LABELS[type]}</span>
             </div>
           ))}
         </div>
 
-        {/* 우상단: source 배지 + 전체화면 버튼 */}
+        {/* 우상단 */}
         <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
-          {source && (
-            <Badge variant={source === "neo4j" ? "default" : "secondary"} className="text-xs">
-              {source === "neo4j" ? "📦 Neo4j" : "🌐 OpenAlex API"}
-            </Badge>
+          {source === "search" && (
+            <Badge variant="secondary" className="text-xs">🔍 검색 결과 그래프</Badge>
+          )}
+          {source === "neo4j" && (
+            <Badge variant="default" className="text-xs">📦 Neo4j</Badge>
+          )}
+          {(source === "openalex" || source === "openalex-only") && (
+            <Badge variant="secondary" className="text-xs">🌐 OpenAlex</Badge>
           )}
           {isFullscreen ? (
             <button
@@ -244,24 +323,27 @@ function TopicGraphPage() {
         </div>
 
         {/* 로딩 */}
-        {graphLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/80">
+        {(graphLoading || searchLoading) && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-950/80">
             <Loader2 className="h-8 w-8 animate-spin text-white" />
+            <p className="text-sm text-slate-300">
+              {searchLoading ? "검색 중…" : "그래프 로드 중…"}
+            </p>
           </div>
         )}
 
         {/* 빈 상태 */}
-        {!graphLoading && !graphData && (
+        {!graphLoading && !searchLoading && !graphData && (
           <div className="flex h-full items-center justify-center text-slate-400">
             <div className="text-center">
               <Network className="mx-auto mb-3 h-12 w-12 opacity-30" />
-              <p className="text-sm">위에서 주제를 검색하고 클릭하세요</p>
+              <p className="text-sm">위에서 주제를 검색하면 지식 그래프가 나타납니다</p>
             </div>
           </div>
         )}
 
         {/* 그래프 */}
-        {graphData && !graphLoading && (
+        {graphData && !graphLoading && !searchLoading && (
           <ForceGraph2D
             ref={graphRef}
             graphData={{ nodes: graphData.nodes, links: graphData.edges }}
@@ -288,29 +370,26 @@ function TopicGraphPage() {
               const r = NODE_RADIUS[n.type] ?? 8;
               const color = NODE_COLORS[n.type] ?? "#6b7280";
 
-              // 원
               ctx.beginPath();
               ctx.arc(node.x!, node.y!, r, 0, 2 * Math.PI);
               ctx.fillStyle = color;
               ctx.fill();
 
-              // 선택된 노드 강조
               if (selected?.id === n.id) {
                 ctx.strokeStyle = "#ffffff";
                 ctx.lineWidth = 2.5;
                 ctx.stroke();
               }
 
-              // 라벨 (zoom 1 이하에서만 표시)
-              if (globalScale >= 0.6) {
-                const fontSize = Math.min(4, 12 / globalScale);
+              if (globalScale >= 0.5) {
+                const fontSize = Math.min(5, 14 / globalScale);
                 ctx.font = `${fontSize}px sans-serif`;
                 ctx.fillStyle = "#f1f5f9";
                 ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                const maxLen = 22;
+                ctx.textBaseline = "top";
+                const maxLen = 18;
                 const label = n.label.length > maxLen ? n.label.slice(0, maxLen) + "…" : n.label;
-                ctx.fillText(label, node.x!, node.y! + r + fontSize + 1);
+                ctx.fillText(label, node.x!, node.y! + r + 2);
               }
             }}
           />
@@ -322,7 +401,7 @@ function TopicGraphPage() {
         <div className="rounded-lg border bg-background p-4 shadow-sm">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full" style={{ background: NODE_COLORS[selected.type] }} />
-            <span className="text-xs uppercase text-muted-foreground">{selected.type}</span>
+            <span className="text-xs text-muted-foreground">{NODE_LABELS[selected.type]}</span>
           </div>
           <h2 className="mt-1 text-lg font-semibold">{selected.label}</h2>
           {selected.labelEn && selected.labelEn !== selected.label && (
@@ -343,7 +422,7 @@ function TopicGraphPage() {
           )}
           {(selected.type === "topic" || selected.type === "sibling") && (
             <Button size="sm" className="mt-3" onClick={() => loadGraph(selected.id)}>
-              이 주제로 그래프 보기
+              이 주제 상세 그래프 보기
             </Button>
           )}
         </div>

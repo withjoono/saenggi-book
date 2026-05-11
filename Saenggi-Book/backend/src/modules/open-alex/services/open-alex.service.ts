@@ -110,9 +110,9 @@ export class OpenAlexService {
             worksCount: t.works_count,
             description: t.description,
             keywords: t.keywords?.slice(0, 5),
-            domain: translated[base + 1] || t.domain?.display_name,
-            field: translated[base + 2] || t.field?.display_name,
-            subfield: translated[base + 3] || t.subfield?.display_name,
+            domain: { id: this.shortId(t.domain.id), label: translated[base + 1] || t.domain?.display_name },
+            field: { id: this.shortId(t.field.id), label: translated[base + 2] || t.field?.display_name },
+            subfield: { id: this.shortId(t.subfield.id), label: translated[base + 3] || t.subfield?.display_name },
           };
         }),
       };
