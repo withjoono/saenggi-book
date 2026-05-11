@@ -5,7 +5,7 @@ import { publicClient } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, BookOpen, Network } from "lucide-react";
+import { Search, Loader2, BookOpen, Network, Maximize2, X } from "lucide-react";
 
 export const Route = createLazyFileRoute("/sb/_layout/topic-graph")({
   component: TopicGraphPage,
@@ -71,6 +71,7 @@ function TopicGraphPage() {
 
   const [searchLoading, setSearchLoading] = useState(false);
   const [graphLoading, setGraphLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 그래프 데이터 변경 시 force 재설정
   useEffect(() => {
@@ -80,6 +81,13 @@ function TopicGraphPage() {
     fg.d3Force("link")?.distance(120);
     fg.d3Force("center")?.strength(0.05);
   }, [graphData]);
+
+  // 전체화면 전환 시 그래프 크기 재조정
+  useEffect(() => {
+    if (!graphRef.current) return;
+    const timer = setTimeout(() => graphRef.current?.zoomToFit(400, 60), 100);
+    return () => clearTimeout(timer);
+  }, [isFullscreen]);
 
   // 검색
   const handleSearch = useCallback(async () => {
@@ -189,7 +197,14 @@ function TopicGraphPage() {
       )}
 
       {/* 그래프 영역 */}
-      <div className="relative overflow-hidden rounded-xl border bg-slate-950 shadow-inner" style={{ height: 560 }}>
+      <div
+        className={
+          isFullscreen
+            ? "fixed inset-0 z-50 bg-slate-950"
+            : "relative overflow-hidden rounded-xl border bg-slate-950 shadow-inner"
+        }
+        style={isFullscreen ? undefined : { height: 560 }}
+      >
         {/* 범례 */}
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-lg bg-black/50 px-3 py-2 text-xs text-white">
           {(Object.entries(NODE_COLORS) as [GraphNode["type"], string][]).map(([type, color]) => (
@@ -200,14 +215,33 @@ function TopicGraphPage() {
           ))}
         </div>
 
-        {/* source 배지 */}
-        {source && (
-          <div className="absolute right-3 top-3 z-10">
+        {/* 우상단: source 배지 + 전체화면 버튼 */}
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+          {source && (
             <Badge variant={source === "neo4j" ? "default" : "secondary"} className="text-xs">
               {source === "neo4j" ? "📦 Neo4j" : "🌐 OpenAlex API"}
             </Badge>
-          </div>
-        )}
+          )}
+          {isFullscreen ? (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition-colors"
+            >
+              <X className="h-3 w-3" />
+              돌아가기
+            </button>
+          ) : (
+            graphData && (
+              <button
+                onClick={() => setIsFullscreen(true)}
+                className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition-colors"
+              >
+                <Maximize2 className="h-3 w-3" />
+                전체화면
+              </button>
+            )
+          )}
+        </div>
 
         {/* 로딩 */}
         {graphLoading && (
