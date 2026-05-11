@@ -2,6 +2,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { Neo4jService } from 'src/database/neo4j/neo4j.service';
+import { TranslationService } from './translation.service';
 import { ConceptSearchDto } from '../dtos/open-alex-query.dto';
 
 const BASE_URL = 'https://api.openalex.org';
@@ -20,11 +21,13 @@ interface OpenAlexTopic {
   field: HierarchyNode;
   subfield: HierarchyNode;
   siblings: HierarchyNode[];
+  wikipedia?: string;
 }
 
 export interface GraphNode {
   id: string;
   label: string;
+  labelEn?: string;
   type: 'domain' | 'field' | 'subfield' | 'topic' | 'sibling';
   worksCount?: number;
   description?: string | null;
@@ -44,40 +47,74 @@ export class OpenAlexService {
   constructor(
     private readonly httpService: HttpService,
     private readonly neo4j: Neo4jService,
+    private readonly translation: TranslationService,
   ) {}
 
   private shortId(fullId: string): string {
     return fullId.split('/').pop() ?? fullId;
   }
 
-  // ─── OpenAlex API ───────────────────────────────────────────────────────────
+  // ── 번역 헬퍼 ────────────────────────────────────────────────────────────────
+
+  /** 그래프 노드 레이블 전체를 한국어로 번역 */
+  private async translateNodes(nodes: GraphNode[]): Promise<GraphNode[]> {
+    const labels = nodes.map(n => n.label);
+    const koLabels = await this.translation.toKorean(labels);
+    return nodes.map((node, i) => ({
+      ...node,
+      labelEn: node.label,
+      label: koLabels[i] || node.label,
+    }));
+  }
+
+  // ── OpenAlex API ─────────────────────────────────────────────────────────────
 
   async searchConcepts(dto: ConceptSearchDto) {
+    // 1. 한국어 쿼리 → 영어 번역
+    const rawSearch = dto.search ?? '';
+    const searchQuery = rawSearch ? await this.translation.toEnglish(rawSearch) : '';
+
     const params: Record<string, any> = {
       page: dto.page,
       per_page: dto.per_page ?? 25,
       mailto: POLITE_EMAIL,
     };
-    if (dto.search) params.search = dto.search;
+    if (searchQuery) params.search = searchQuery;
 
     try {
       const { data } = await firstValueFrom(
         this.httpService.get(`${BASE_URL}/topics`, { params }),
       );
+
+      const results: OpenAlexTopic[] = data.results;
+
+      // 2. 레이블 + 계층명 일괄 번역 (결과당 4개: label, domain, field, subfield)
+      const textsToTranslate = results.flatMap(t => [
+        t.display_name,
+        t.domain?.display_name ?? '',
+        t.field?.display_name ?? '',
+        t.subfield?.display_name ?? '',
+      ]);
+      const translated = await this.translation.toKorean(textsToTranslate);
+
       return {
         total: data.meta.count,
         page: data.meta.page,
         perPage: data.meta.per_page,
-        results: data.results.map((t: OpenAlexTopic) => ({
-          id: this.shortId(t.id),
-          label: t.display_name,
-          worksCount: t.works_count,
-          description: t.description,
-          keywords: t.keywords?.slice(0, 5),
-          domain: t.domain?.display_name,
-          field: t.field?.display_name,
-          subfield: t.subfield?.display_name,
-        })),
+        results: results.map((t, i) => {
+          const base = i * 4;
+          return {
+            id: this.shortId(t.id),
+            label: translated[base] || t.display_name,
+            labelEn: t.display_name,
+            worksCount: t.works_count,
+            description: t.description,
+            keywords: t.keywords?.slice(0, 5),
+            domain: translated[base + 1] || t.domain?.display_name,
+            field: translated[base + 2] || t.field?.display_name,
+            subfield: translated[base + 3] || t.subfield?.display_name,
+          };
+        }),
       };
     } catch (error) {
       this.logger.error('OpenAlex topics 검색 실패', error.message);
@@ -100,7 +137,6 @@ export class OpenAlexService {
     const t = await this.fetchTopicFromApi(topicId);
     const rootId = this.shortId(t.id);
 
-    // MERGE로 중복 없이 노드/관계 저장
     await this.neo4j.run(
       `
       MERGE (domain:Domain {id: $domainId}) SET domain.label = $domainLabel
@@ -130,7 +166,6 @@ export class OpenAlexService {
       },
     );
 
-    // 형제 토픽
     for (const sib of t.siblings.slice(0, 8)) {
       const sibId = this.shortId(sib.id);
       await this.neo4j.run(
@@ -213,39 +248,79 @@ export class OpenAlexService {
     return { nodes, edges };
   }
 
-  // ─── 통합: Neo4j 우선, 없으면 API에서 가져와 저장 ───────────────────────────
+  // ─── 통합: Neo4j 우선, 없으면 API → Neo4j 저장 ─────────────────────────────
 
   async getConceptGraph(topicId: string): Promise<{ nodes: GraphNode[]; edges: GraphEdge[]; source: string }> {
+    let graph: { nodes: GraphNode[]; edges: GraphEdge[] } | null = null;
+    let source = 'openalex';
+
     try {
       const cached = await this.getGraphFromNeo4j(topicId);
       if (cached.nodes.length > 0) {
-        return { ...cached, source: 'neo4j' };
+        graph = cached;
+        source = 'neo4j';
       }
-    } catch {
-      // Neo4j 오프라인이면 API fallback
+    } catch { /* Neo4j 오프라인이면 API fallback */ }
+
+    if (!graph) {
+      try {
+        graph = await this.importTopicToNeo4j(topicId);
+        source = 'openalex';
+      } catch {
+        const t = await this.fetchTopicFromApi(topicId);
+        graph = this.buildGraphFromTopic(t);
+        source = 'openalex-only';
+      }
     }
 
+    // 노드 레이블 한국어 번역
+    const translatedNodes = await this.translateNodes(graph.nodes);
+
+    // 메인 토픽 설명: Wikipedia 한국어 우선, 없으면 영어 유지
     try {
-      const fresh = await this.importTopicToNeo4j(topicId);
-      return { ...fresh, source: 'openalex' };
-    } catch {
-      // Neo4j 저장 실패해도 API 데이터 반환
       const t = await this.fetchTopicFromApi(topicId);
-      return { ...this.buildGraphFromTopic(t), source: 'openalex-only' };
-    }
+      if (t.wikipedia) {
+        const wiki = await this.translation.getKoreanFromWikipedia(t.wikipedia);
+        if (wiki) {
+          const mainNode = translatedNodes.find(n => n.type === 'topic');
+          if (mainNode) {
+            mainNode.description = wiki.extract;
+          }
+        }
+      }
+    } catch { /* Wikipedia 실패 시 영어 설명 유지 */ }
+
+    return { nodes: translatedNodes, edges: graph.edges, source };
   }
 
   async getConceptById(topicId: string) {
     const t = await this.fetchTopicFromApi(topicId);
+
+    // 레이블 번역
+    const [koLabel, koDomain, koField, koSubfield] = await this.translation.toKorean([
+      t.display_name,
+      t.domain?.display_name,
+      t.field?.display_name,
+      t.subfield?.display_name,
+    ]);
+
+    // 설명: Wikipedia 한국어 우선
+    let description = t.description;
+    if (t.wikipedia) {
+      const wiki = await this.translation.getKoreanFromWikipedia(t.wikipedia);
+      if (wiki) description = wiki.extract;
+    }
+
     return {
       id: this.shortId(t.id),
-      label: t.display_name,
-      description: t.description,
+      label: koLabel || t.display_name,
+      labelEn: t.display_name,
+      description,
       keywords: t.keywords,
       worksCount: t.works_count,
-      domain: { id: this.shortId(t.domain.id), label: t.domain.display_name },
-      field: { id: this.shortId(t.field.id), label: t.field.display_name },
-      subfield: { id: this.shortId(t.subfield.id), label: t.subfield.display_name },
+      domain: { id: this.shortId(t.domain.id), label: koDomain || t.domain.display_name },
+      field: { id: this.shortId(t.field.id), label: koField || t.field.display_name },
+      subfield: { id: this.shortId(t.subfield.id), label: koSubfield || t.subfield.display_name },
       siblings: t.siblings.map(s => ({ id: this.shortId(s.id), label: s.display_name })),
     };
   }
@@ -260,7 +335,10 @@ export class OpenAlexService {
       { id: domainId, label: t.domain.display_name, type: 'domain' },
       { id: fieldId, label: t.field.display_name, type: 'field' },
       { id: subId, label: t.subfield.display_name, type: 'subfield' },
-      { id: rootId, label: t.display_name, type: 'topic', worksCount: t.works_count, description: t.description, keywords: t.keywords },
+      {
+        id: rootId, label: t.display_name, type: 'topic',
+        worksCount: t.works_count, description: t.description, keywords: t.keywords,
+      },
     ];
     const edges: GraphEdge[] = [
       { source: domainId, target: fieldId, type: 'hierarchy' },

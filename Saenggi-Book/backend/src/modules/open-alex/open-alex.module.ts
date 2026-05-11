@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { OpenAlexController } from './controllers/open-alex.controller';
 import { OpenAlexService } from './services/open-alex.service';
+import { TranslationService } from './services/translation.service';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { OpenAlexService } from './services/open-alex.service';
     }),
   ],
   controllers: [OpenAlexController],
-  providers: [OpenAlexService],
+  providers: [OpenAlexService, TranslationService],
   exports: [OpenAlexService],
 })
 export class OpenAlexModule {}

@@ -15,6 +15,7 @@ export const Route = createLazyFileRoute("/sb/_layout/topic-graph")({
 interface TopicResult {
   id: string;
   label: string;
+  labelEn?: string;
   worksCount: number;
   domain?: string;
   field?: string;
@@ -25,6 +26,7 @@ interface TopicResult {
 interface GraphNode {
   id: string;
   label: string;
+  labelEn?: string;
   type: "domain" | "field" | "subfield" | "topic" | "sibling";
   worksCount?: number;
   description?: string;
@@ -165,6 +167,9 @@ function TopicGraphPage() {
                 <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{r.label}</p>
+                  {r.labelEn && r.labelEn !== r.label && (
+                    <p className="text-xs text-muted-foreground/70 italic">{r.labelEn}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {[r.domain, r.field, r.subfield].filter(Boolean).join(" › ")}
                     {r.worksCount > 0 && ` · 논문 ${r.worksCount.toLocaleString()}편`}
@@ -232,7 +237,10 @@ function TopicGraphPage() {
             backgroundColor="#020617"
             nodeColor={(node) => NODE_COLORS[(node as GraphNode).type] ?? "#6b7280"}
             nodeVal={(node) => NODE_RADIUS[(node as GraphNode).type] ?? 8}
-            nodeLabel={(node) => (node as GraphNode).label}
+            nodeLabel={(node) => {
+              const n = node as GraphNode;
+              return n.labelEn && n.labelEn !== n.label ? `${n.label} (${n.labelEn})` : n.label;
+            }}
             linkColor={(link) => (link as GraphEdge).type === "sibling" ? "#4b5563" : "#374151"}
             linkWidth={(link) => (link as GraphEdge).type === "hierarchy" ? 2 : 1}
             linkDirectionalParticles={(link) => (link as GraphEdge).type === "hierarchy" ? 2 : 0}
@@ -283,6 +291,9 @@ function TopicGraphPage() {
             <span className="text-xs uppercase text-muted-foreground">{selected.type}</span>
           </div>
           <h2 className="mt-1 text-lg font-semibold">{selected.label}</h2>
+          {selected.labelEn && selected.labelEn !== selected.label && (
+            <p className="text-sm text-muted-foreground italic">{selected.labelEn}</p>
+          )}
           {selected.description && (
             <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{selected.description}</p>
           )}
