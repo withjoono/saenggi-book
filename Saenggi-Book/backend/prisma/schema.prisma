@@ -849,7 +849,7 @@ model user_notification_types {
 
 model sv_auth_member {
   id              BigInt    @id(map: "PK_7a579f0f64ef1d3d020d6251af7") @default(autoincrement())
-  hub_member_id   BigInt    @unique(map: "IDX_c1308731e66268fa4e2bd3b260")
+  hub_member_id   String    @unique(map: "IDX_c1308731e66268fa4e2bd3b260") @db.VarChar(30)
   nickname        String?   @db.VarChar(255)
   email           String?   @db.VarChar(500)
   member_type     String    @default("student") @db.VarChar(20)
