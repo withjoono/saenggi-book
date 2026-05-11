@@ -1,0 +1,2 @@
+-- Baseline migration: marks existing schema state as already applied
+-- This migration is intentionally empty
