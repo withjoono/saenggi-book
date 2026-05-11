@@ -1,52 +1,58 @@
 name: Deploy Backend
 
 on:
-    push:
-      branches: [main]
-      paths:
-        - 'Saenggi-Book/backend/**'
-        - '.github/workflows/deploy-backend.yml'
-    workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Saenggi-Book/backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
 
 jobs:
-    deploy:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Authenticate to Google Cloud
-          uses: google-github-actions/auth@v2
-          with:
-            credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-        - name: Setup Cloud SDK
-          uses: google-github-actions/setup-gcloud@v2
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-        - uses: actions/setup-node@v4
-          with:
-            node-version: 20
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-        - name: Install dependencies
-          working-directory: Saenggi-Book/backend
-          run: npm install
+      - name: Install dependencies
+        working-directory: Saenggi-Book/backend
+        run: npm install
 
-        - name: Install Cloud SQL Auth Proxy
-          run: |
-            curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.9.0/cloud-sql-proxy.linux.amd64
-            chmod +x cloud-sql-proxy
-            sudo mv cloud-sql-proxy /usr/local/bin/
+      - name: Install Cloud SQL Auth Proxy
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.9.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          sudo mv cloud-sql-proxy /usr/local/bin/
 
-        - name: Start Cloud SQL Auth Proxy
-          run: |
-            cloud-sql-proxy --port 5434 
-            ts-back-nest-479305:asia-northeast3:geobuk-db & sleep 5
+      - name: Start Cloud SQL Auth Proxy
+        run: |
+          cloud-sql-proxy --port 5434 ts-back-nest-479305:asia-northeast3:geobuk-db &
+          sleep 5
 
-        - name: Run Prisma migrations working-directory: Saenggi-Book/backend
-        
-        - name: Restore app.yaml from secret
-          working-directory: Saenggi-Book/backend
-          run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
+      - name: Run Prisma migrations
+        working-directory: Saenggi-Book/backend
+        env:
+          DATABASE_URL: postgresql://tsuser:tsuser1234@127.0.0.1:5434/geobukschool_prod
+        run: |
+          npx prisma migrate resolve --applied "20260511000000_baseline" 2>&1 || true
+          npx prisma migrate deploy
 
-        - name: Deploy to App Engine
-          working-directory: Saenggi-Book/backend
-          run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet --version stable 
+      - name: Restore app.yaml from secret
+        working-directory: Saenggi-Book/backend
+        run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
+
+      - name: Deploy to App Engine
+        working-directory: Saenggi-Book/backend
+        run: gcloud app deploy app.yaml --project=ts-back-nest-479305 --quiet --version stable
