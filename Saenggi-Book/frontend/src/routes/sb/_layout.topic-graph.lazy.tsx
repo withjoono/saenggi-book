@@ -85,16 +85,29 @@ function buildSearchGraph(results: TopicResult[]): { nodes: GraphNode[]; edges: 
   };
 
   for (const r of results) {
-    addNode({ id: r.domain.id, label: r.domain.label, type: "domain" });
-    addNode({ id: r.field.id, label: r.field.label, type: "field" });
-    addNode({ id: r.subfield.id, label: r.subfield.label, type: "subfield" });
+    // domain/field/subfield: 신형 {id,label} 또는 구형 string 모두 처리
+    const dom = typeof r.domain === "string"
+      ? { id: r.domain as string, label: r.domain as string }
+      : (r.domain ?? { id: "unknown", label: "" });
+    const fld = typeof r.field === "string"
+      ? { id: r.field as string, label: r.field as string }
+      : (r.field ?? { id: "unknown", label: "" });
+    const sub = typeof r.subfield === "string"
+      ? { id: r.subfield as string, label: r.subfield as string }
+      : (r.subfield ?? { id: "unknown", label: "" });
+
+    if (!dom.id || !fld.id || !sub.id || !r.id) continue;
+
+    addNode({ id: dom.id, label: dom.label ?? "", type: "domain" });
+    addNode({ id: fld.id, label: fld.label ?? "", type: "field" });
+    addNode({ id: sub.id, label: sub.label ?? "", type: "subfield" });
     addNode({
-      id: r.id, label: r.label, labelEn: r.labelEn, type: "topic",
+      id: r.id, label: r.label ?? "", labelEn: r.labelEn, type: "topic",
       worksCount: r.worksCount, keywords: r.keywords, description: r.description,
     });
-    addEdge({ source: r.domain.id, target: r.field.id, type: "hierarchy" });
-    addEdge({ source: r.field.id, target: r.subfield.id, type: "hierarchy" });
-    addEdge({ source: r.subfield.id, target: r.id, type: "hierarchy" });
+    addEdge({ source: dom.id, target: fld.id, type: "hierarchy" });
+    addEdge({ source: fld.id, target: sub.id, type: "hierarchy" });
+    addEdge({ source: sub.id, target: r.id, type: "hierarchy" });
   }
 
   return { nodes, edges };
@@ -388,7 +401,8 @@ function TopicGraphPage() {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "top";
                 const maxLen = 18;
-                const label = n.label.length > maxLen ? n.label.slice(0, maxLen) + "…" : n.label;
+                const raw = n.label ?? "";
+                const label = raw.length > maxLen ? raw.slice(0, maxLen) + "…" : raw;
                 ctx.fillText(label, node.x!, node.y! + r + 2);
               }
             }}
