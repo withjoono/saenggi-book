@@ -7,19 +7,6 @@
       "hosting": {
         "sb": [
           "ms-front"
-        ],
-        "default": [
-          "ts-front-479305"
-        ]
-      }
-    },
-    "ts-back-nest-479305": {
-      "hosting": {
-        "sb": [
-          "ms-front"
-        ],
-        "default": [
-          "ts-front-479305"
         ]
       }
     }

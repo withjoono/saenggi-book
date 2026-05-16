@@ -13,7 +13,7 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "preview": "vite preview",
-    "deploy:firebase": "npm run build && firebase deploy",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting:sb",
     "deploy:firebase:staging": "npm run build && firebase deploy --only hosting:staging",
     "deploy:firebase:prod": "npm run build && firebase deploy --only hosting:sb",
     "prepare": "husky"

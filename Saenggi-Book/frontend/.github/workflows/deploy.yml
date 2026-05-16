@@ -54,7 +54,7 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ts-front-479305
-          target: susi
+          target: sb
           channelId: preview-${{ github.event.pull_request.number }}
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
@@ -66,7 +66,7 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ts-front-479305
-          target: susi
+          target: sb
           channelId: live
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks

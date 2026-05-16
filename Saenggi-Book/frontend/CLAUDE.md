@@ -250,15 +250,38 @@ import { authClient } from '@/lib/api'
 
 ## Google Cloud Platform 통합
 
+### ⚠️ Firebase 사이트 소유권 — 절대 규칙
+
+이 프로젝트(생기북/Saenggi-Book)는 **`ms-front` 사이트에만 배포**합니다.
+
+| Firebase Site | 소유 앱 | 도메인 |
+|---|---|---|
+| `ms-front` | **생기북 (이 앱)** | ms-front.web.app |
+| `ts-front-479305` | **Hub 앱** | www.tskool.kr |
+
+**절대 하지 말 것:**
+- `firebase deploy --only hosting` (target 미지정) — `ts-front-479305`(Hub)까지 덮어씀
+- `.firebaserc`에 `default` target 추가 — 같은 이유
+- `firebase.json`에 `target: "default"` 호스팅 블록 추가 — 같은 이유
+- `deploy-frontend.yml`에서 `--only hosting:sb` 이외 target 사용
+
+**항상 이것만 사용:**
+```bash
+firebase deploy --only hosting:sb   # sb target = ms-front 사이트
+```
+
+이 규칙이 깨지면 `www.tskool.kr`(Hub)이 생기북 빌드로 덮어씌워집니다.
+Hub 팀에서 배포한 것이 사라지므로 즉시 Hub 프론트엔드 재배포가 필요합니다.
+
 ### 배포
 프로젝트는 Firebase Hosting을 통해 배포됩니다:
 ```bash
-npm run deploy:firebase:prod      # 프로덕션 배포
+npm run deploy:firebase:prod      # 프로덕션 배포 (--only hosting:sb)
 npm run deploy:firebase:staging   # 스테이징 배포
 ```
 
 GitHub Actions를 통한 자동 배포:
-- `main` 브랜치 push → 자동 프로덕션 배포
+- `main` 브랜치 push → 자동 프로덕션 배포 (`--only hosting:sb`)
 - Pull Request → 미리보기 환경 자동 생성
 
 ### 환경 변수 관리
