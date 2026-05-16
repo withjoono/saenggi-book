@@ -51,7 +51,12 @@ jobs:
 
       - name: Restore app.yaml from secret
         working-directory: Saenggi-Book/backend
-        run: echo "${{ secrets.BACKEND_APP_YAML }}" > app.yaml
+        env:
+          APP_YAML_CONTENT: ${{ secrets.BACKEND_APP_YAML }}
+        run: |
+          printf '%s\n' "$APP_YAML_CONTENT" > app.yaml
+          echo "app.yaml size: $(wc -c < app.yaml) bytes"
+          echo "First line: $(head -1 app.yaml)"
 
       - name: Deploy to App Engine
         working-directory: Saenggi-Book/backend
