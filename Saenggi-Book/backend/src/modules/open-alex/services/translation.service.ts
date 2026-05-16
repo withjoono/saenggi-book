@@ -3,11 +3,12 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as taxonomyKo from '../data/taxonomy-ko.json';
 
-// domain + field + subfield display_name → 한국어 통합 룩업 테이블
+// domain + field + subfield + topic display_name → 한국어 통합 룩업 테이블
 const TAXONOMY_MAP: Record<string, string> = {
   ...taxonomyKo.domains,
   ...taxonomyKo.fields,
   ...taxonomyKo.subfields,
+  ...taxonomyKo.topics,
 };
 
 const MYMEMORY_URL = 'https://api.mymemory.translated.net/get';

@@ -67,6 +67,12 @@ export class ScienceOnService {
       this.logger.log(`ScienceON 쿼리 번역: "${dto.query}" → "${koQuery}"`);
     }
 
+    // 번역 실패 시 영어 쿼리로 ScienceON 호출하면 502 오류 → 빈 결과 반환
+    if (!this.translation.isKorean(koQuery)) {
+      this.logger.warn(`ScienceON: 번역 실패로 검색 건너뜀 (원문: "${dto.query}")`);
+      return { total: 0, page, perPage, results: [] };
+    }
+
     const searchQuery = JSON.stringify({ BI: koQuery });
 
     const params = {
