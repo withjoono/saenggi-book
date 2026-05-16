@@ -55,6 +55,7 @@ import { WinstonModule } from 'nest-winston';
 
 import { SetukBuilderModule } from './modules/setuk-builder/setuk-builder.module';
 import { OpenAlexModule } from './modules/open-alex/open-alex.module';
+import { ScienceOnModule } from './modules/science-on/science-on.module';
 import { Neo4jModule } from './database/neo4j/neo4j.module';
 
 @Module({
@@ -141,6 +142,7 @@ import { Neo4jModule } from './database/neo4j/neo4j.module';
     SetukBuilderModule,
     Neo4jModule,    // Neo4j 그래프 DB
     OpenAlexModule, // OpenAlex - 수행평가 주제 탐색
+    ScienceOnModule, // KISTI Science ON - 한국 학술 논문 검색
 
   ],
   controllers: [AppController],

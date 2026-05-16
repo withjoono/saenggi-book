@@ -293,6 +293,68 @@ export class OpenAlexService {
     return { nodes: translatedNodes, edges: graph.edges, source };
   }
 
+  private reconstructAbstract(invertedIndex: Record<string, number[]> | null): string {
+    if (!invertedIndex) return '';
+    const words: string[] = [];
+    for (const [word, positions] of Object.entries(invertedIndex)) {
+      for (const pos of positions) {
+        words[pos] = word;
+      }
+    }
+    return words.filter(Boolean).join(' ');
+  }
+
+  async getTopicPapers(topicId: string, page = 1, perPage = 10) {
+    const params: Record<string, any> = {
+      filter: `primary_topic.id:${topicId}`,
+      'per-page': perPage,
+      page,
+      sort: 'cited_by_count:desc',
+      select: 'id,title,abstract_inverted_index,primary_location,publication_year,cited_by_count,open_access',
+      mailto: POLITE_EMAIL,
+    };
+
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get(`${BASE_URL}/works`, { params }),
+      );
+
+      const works: any[] = data.results ?? [];
+
+      const raw = works.map(w => ({
+        titleEn: (w.title ?? '').trim(),
+        abstractSnippet: this.reconstructAbstract(w.abstract_inverted_index).slice(0, 180),
+        year: w.publication_year as number | null,
+        citedBy: (w.cited_by_count as number) ?? 0,
+        url: w.primary_location?.landing_page_url ?? w.open_access?.oa_url ?? null,
+        openAccessUrl: (w.open_access?.oa_url as string) ?? null,
+      }));
+
+      // 제목 + 초록 스니펫 일괄 번역 (pairs: [title0, abstract0, title1, abstract1, ...])
+      const textsToTranslate = raw.flatMap(p => [p.titleEn, p.abstractSnippet]);
+      const translated = await this.translation.toKorean(textsToTranslate);
+
+      return {
+        total: data.meta.count,
+        page: data.meta.page,
+        perPage: data.meta.per_page,
+        results: raw.map((p, i) => ({
+          titleKo: translated[i * 2] || p.titleEn,
+          titleEn: p.titleEn,
+          summaryKo: translated[i * 2 + 1] || p.abstractSnippet,
+          summaryEn: p.abstractSnippet,
+          year: p.year,
+          citedBy: p.citedBy,
+          url: p.url,
+          openAccessUrl: p.openAccessUrl,
+        })),
+      };
+    } catch (error) {
+      this.logger.error('논문 목록 조회 실패', error.message);
+      throw new HttpException('논문 목록을 불러올 수 없습니다.', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
   async getConceptById(topicId: string) {
     const t = await this.fetchTopicFromApi(topicId);
 

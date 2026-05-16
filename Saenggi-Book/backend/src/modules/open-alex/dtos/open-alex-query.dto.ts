@@ -32,3 +32,20 @@ export class ConceptSearchDto {
   @Max(200)
   per_page?: number = 25;
 }
+
+export class PaperQueryDto {
+  @ApiProperty({ description: '페이지 번호', required: false, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiProperty({ name: 'per_page', description: '페이지당 논문 수 (최대 20)', required: false, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(20)
+  per_page?: number = 10;
+}

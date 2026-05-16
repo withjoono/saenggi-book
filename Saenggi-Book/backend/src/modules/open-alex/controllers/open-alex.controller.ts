@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { OpenAlexService } from '../services/open-alex.service';
-import { ConceptSearchDto } from '../dtos/open-alex-query.dto';
+import { ConceptSearchDto, PaperQueryDto } from '../dtos/open-alex-query.dto';
 
 @ApiTags('OpenAlex - 수행평가 주제 탐색')
 @Controller('open-alex')
@@ -33,5 +33,13 @@ export class OpenAlexController {
   @ApiParam({ name: 'id', example: 'C41008148', description: 'OpenAlex Concept ID' })
   getConceptGraph(@Param('id') id: string) {
     return this.openAlexService.getConceptGraph(id);
+  }
+
+  @Public()
+  @Get('concepts/:id/papers')
+  @ApiOperation({ summary: '주제별 논문 목록', description: '특정 주제의 관련 논문을 인용수 순으로 반환합니다.' })
+  @ApiParam({ name: 'id', example: 'T12345', description: 'OpenAlex Topic ID' })
+  getTopicPapers(@Param('id') id: string, @Query() dto: PaperQueryDto) {
+    return this.openAlexService.getTopicPapers(id, dto.page, dto.per_page);
   }
 }

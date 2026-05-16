@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Search, Loader2, BookOpen, Network, Maximize2, X,
-  ArrowLeft, ChevronRight, FileText,
+  ArrowLeft, ChevronRight, FileText, ExternalLink, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,13 +49,25 @@ interface GraphEdge {
   type: "hierarchy" | "sibling";
 }
 
+interface PaperItem {
+  id: string;
+  titleKo: string;
+  titleEn?: string;
+  abstract?: string;
+  authors: string[];
+  journal?: string;
+  publisher?: string;
+  year?: number;
+  url?: string;
+}
+
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const NODE_COLORS: Record<GraphNode["type"], string> = {
   domain:   "#1e3a5f",
   field:    "#2563eb",
   subfield: "#16a34a",
   topic:    "#dc2626",
-  sibling:  "#9ca3af",
+  sibling:  "#6b7280",
 };
 
 const NODE_RADIUS: Record<GraphNode["type"], number> = {
@@ -136,6 +148,13 @@ function TopicGraphPage() {
   const [graphLoading, setGraphLoading]   = useState(false);
   const [isFullscreen, setIsFullscreen]   = useState(false);
   const [canvasSize, setCanvasSize]       = useState({ width: 0, height: 0 });
+
+  const [papers, setPapers]               = useState<PaperItem[]>([]);
+  const [papersTotal, setPapersTotal]     = useState(0);
+  const [papersPage, setPapersPage]       = useState(1);
+  const [papersLoading, setPapersLoading] = useState(false);
+  const [showPapers, setShowPapers]       = useState(false);
+  const [papersTopicId, setPapersTopicId] = useState<string | null>(null);
 
   // ── 컨테이너 크기 추적 (ResizeObserver) ─────────────────────────────────────
   useEffect(() => {
@@ -223,6 +242,42 @@ function TopicGraphPage() {
     }
   }, []);
 
+  // ── 논문 목록 조회 (Science ON, 한국어 학술논문) ────────────────────────────
+  const fetchPapers = useCallback(async (topicId: string, topicLabel: string, page: number) => {
+    setPapersLoading(true);
+    try {
+      const { data } = await publicClient.get(`/science-on/articles`, {
+        params: { query: topicLabel, page, per_page: 10 },
+      });
+      const payload = data?.data;
+      if (page === 1) {
+        setPapers(payload?.results ?? []);
+      } else {
+        setPapers(prev => [...prev, ...(payload?.results ?? [])]);
+      }
+      setPapersTotal(payload?.total ?? 0);
+      setPapersPage(page);
+      setPapersTopicId(topicId);
+    } catch {
+      toast.error("논문 목록을 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setPapersLoading(false);
+    }
+  }, []);
+
+  const handleTogglePapers = useCallback((topicId: string, topicLabel: string) => {
+    if (showPapers && papersTopicId === topicId) {
+      setShowPapers(false);
+    } else {
+      setShowPapers(true);
+      if (papersTopicId !== topicId) {
+        setPapers([]);
+        setPapersPage(1);
+        fetchPapers(topicId, topicLabel, 1);
+      }
+    }
+  }, [showPapers, papersTopicId, fetchPapers]);
+
   // ── 검색 결과 그래프로 복귀 ─────────────────────────────────────────────────────
   const backToSearch = useCallback(() => {
     if (searchResults.length === 0) return;
@@ -234,6 +289,7 @@ function TopicGraphPage() {
   // ── 그래프 노드 클릭 → 오른쪽 패널에 표시 ─────────────────────────────────────
   const handleNodeClick = useCallback((node: GraphNode) => {
     setSelected(node);
+    setShowPapers(false);
     graphRef.current?.centerAt(node.x ?? 0, node.y ?? 0, 400);
     graphRef.current?.zoom(2.5, 400);
   }, []);
@@ -299,19 +355,19 @@ function TopicGraphPage() {
         {/* ── 좌: 그래프 캔버스 ───────────────────────────────────── */}
         <div
           ref={containerRef}
-          className="relative overflow-hidden rounded-xl border bg-slate-950 shadow-inner flex-1"
+          className="relative overflow-hidden rounded-xl border bg-white shadow-inner flex-1"
           style={canvasStyle}
         >
           {/* 범례 — graphData 있을 때만 */}
           {graphData && (
-            <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-lg bg-black/50 px-3 py-2 text-xs text-white pointer-events-none">
+            <div className="absolute left-3 top-3 z-10 flex flex-col gap-1 rounded-lg bg-white/95 border border-gray-200 shadow-sm px-3 py-2 text-xs text-gray-700 pointer-events-none">
               {(Object.entries(NODE_COLORS) as [GraphNode["type"], string][]).map(([type, color]) => (
                 <div key={type} className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
                   <span>{NODE_LABELS[type]}</span>
                 </div>
               ))}
-              <p className="mt-1 border-t border-white/20 pt-1 text-[10px] text-white/50">
+              <p className="mt-1 border-t border-gray-200 pt-1 text-[10px] text-gray-400">
                 노드 클릭 → 오른쪽에서 탐색
               </p>
             </div>
@@ -322,14 +378,14 @@ function TopicGraphPage() {
             {isFullscreen ? (
               <button
                 onClick={() => setIsFullscreen(false)}
-                className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition-colors"
+                className="flex items-center gap-1 rounded-md bg-black/10 px-2 py-1 text-xs text-gray-700 hover:bg-black/20 transition-colors"
               >
                 <X className="h-3 w-3" /> 닫기
               </button>
             ) : hasGraph && (
               <button
                 onClick={() => setIsFullscreen(true)}
-                className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition-colors"
+                className="flex items-center gap-1 rounded-md bg-black/10 px-2 py-1 text-xs text-gray-700 hover:bg-black/20 transition-colors"
               >
                 <Maximize2 className="h-3 w-3" /> 전체화면
               </button>
@@ -338,9 +394,9 @@ function TopicGraphPage() {
 
           {/* 로딩 오버레이 */}
           {isLoading && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-950/80">
-              <Loader2 className="h-8 w-8 animate-spin text-white" />
-              <p className="text-sm text-slate-300">
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/90">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+              <p className="text-sm text-gray-500">
                 {searchLoading ? "검색 중…" : "그래프 불러오는 중…"}
               </p>
             </div>
@@ -348,17 +404,29 @@ function TopicGraphPage() {
 
           {/* 빈 상태 */}
           {!isLoading && !graphData && (
-            <div className="flex h-full items-center justify-center text-slate-400" style={{ minHeight: 180 }}>
+            <div className="flex h-full items-center justify-center" style={{ minHeight: 180 }}>
               {mode === "search" ? (
-                <div className="text-center">
+                <div className="text-center text-gray-400">
                   <Network className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                  <p className="text-sm">"{query}"에 대한 검색 결과가 없습니다</p>
+                  <p className="text-sm">"{query}"에 대한 결과가 없습니다</p>
                   <p className="text-xs mt-1 opacity-60">다른 키워드로 검색해보세요</p>
                 </div>
               ) : (
-                <div className="text-center">
-                  <Network className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                  <p className="text-sm">위에서 주제를 검색하면 지식 그래프가 나타납니다</p>
+                <div className="text-center px-6">
+                  <Network className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                  <p className="text-sm font-medium text-gray-500">주제를 검색하면 지식 그래프가 나타납니다</p>
+                  <p className="text-xs text-gray-400 mt-2">예시 키워드</p>
+                  <div className="flex flex-wrap gap-1.5 justify-center mt-1.5">
+                    {["기후변화", "인공지능", "양자역학", "진화론", "세계사"].map((kw) => (
+                      <button
+                        key={kw}
+                        onClick={() => { setQuery(kw); }}
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded-full transition-colors"
+                      >
+                        {kw}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -374,7 +442,7 @@ function TopicGraphPage() {
               nodeId="id"
               linkSource="source"
               linkTarget="target"
-              backgroundColor="#020617"
+              backgroundColor="#ffffff"
               nodeColor={(node) => NODE_COLORS[(node as GraphNode).type] ?? "#6b7280"}
               nodeVal={(node) => NODE_RADIUS[(node as GraphNode).type] ?? 8}
               nodeLabel={(node) => {
@@ -384,7 +452,7 @@ function TopicGraphPage() {
                   : n.label;
               }}
               linkColor={(link) =>
-                (link as GraphEdge).type === "sibling" ? "#4b5563" : "#374151"
+                (link as GraphEdge).type === "sibling" ? "#9ca3af" : "#6b7280"
               }
               linkWidth={(link) =>
                 (link as GraphEdge).type === "hierarchy" ? 2 : 1
@@ -407,7 +475,7 @@ function TopicGraphPage() {
                 if (isSelected) {
                   ctx.beginPath();
                   ctx.arc(node.x!, node.y!, r + 5, 0, 2 * Math.PI);
-                  ctx.fillStyle = "rgba(255,255,255,0.12)";
+                  ctx.fillStyle = "rgba(0,0,0,0.08)";
                   ctx.fill();
                 }
 
@@ -417,18 +485,16 @@ function TopicGraphPage() {
                 ctx.fillStyle = color;
                 ctx.fill();
 
-                // 선택 테두리
-                if (isSelected) {
-                  ctx.strokeStyle = "#ffffff";
-                  ctx.lineWidth = 2.5;
-                  ctx.stroke();
-                }
+                // 테두리 (항상 표시, 선택 시 강조)
+                ctx.strokeStyle = isSelected ? "#1f2937" : "rgba(0,0,0,0.22)";
+                ctx.lineWidth = isSelected ? 2.5 : 1.2;
+                ctx.stroke();
 
                 // 레이블
                 if (globalScale >= 0.4) {
                   const fontSize = Math.min(5, 14 / globalScale);
                   ctx.font = `${isSelected ? "bold " : ""}${fontSize}px sans-serif`;
-                  ctx.fillStyle = isSelected ? "#ffffff" : "#e2e8f0";
+                  ctx.fillStyle = isSelected ? "#111111" : "#1f2937";
                   ctx.textAlign = "center";
                   ctx.textBaseline = "top";
                   const raw = n.label ?? "";
@@ -543,6 +609,98 @@ function TopicGraphPage() {
                         이 주제 상세 그래프 보기
                       </Button>
                     )}
+
+                    {/* 논문 목록 */}
+                    {(selected.type === "topic" || selected.type === "sibling") && (
+                      <div>
+                        <button
+                          onClick={() => handleTogglePapers(selected.id, selected.label)}
+                          className="flex items-center justify-between w-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-1"
+                        >
+                          <span className="flex items-center gap-1">
+                            <BookOpen className="h-3.5 w-3.5" />
+                            관련 한국어 논문 (Science ON)
+                            {papersTotal > 0 && papersTopicId === selected.id && (
+                              <span className="text-muted-foreground/60">({papersTotal.toLocaleString()}편 중 {papers.length}편)</span>
+                            )}
+                          </span>
+                          {showPapers && papersTopicId === selected.id
+                            ? <ChevronUp className="h-3 w-3" />
+                            : <ChevronDown className="h-3 w-3" />
+                          }
+                        </button>
+
+                        {showPapers && papersTopicId === selected.id && (
+                          <div className="mt-2 space-y-2">
+                            {papersLoading && papers.length === 0 ? (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : papers.length === 0 ? (
+                              <p className="text-xs text-muted-foreground text-center py-4">
+                                관련 논문이 없습니다.
+                              </p>
+                            ) : (
+                              papers.map((paper, idx) => (
+                                <div key={paper.id || idx} className="rounded-lg border bg-muted/30 p-2.5 space-y-1">
+                                  <p className="text-xs font-medium leading-snug line-clamp-2">
+                                    {paper.titleKo}
+                                  </p>
+                                  {paper.titleEn && paper.titleEn !== paper.titleKo && (
+                                    <p className="text-[10px] text-muted-foreground/70 italic leading-snug line-clamp-1">
+                                      {paper.titleEn}
+                                    </p>
+                                  )}
+                                  {paper.abstract && (
+                                    <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3 mt-1">
+                                      {paper.abstract}
+                                    </p>
+                                  )}
+                                  {(paper.authors?.length ?? 0) > 0 && (
+                                    <p className="text-[10px] text-muted-foreground/80 line-clamp-1">
+                                      {paper.authors!.slice(0, 3).join(", ")}
+                                      {paper.authors!.length > 3 && ` 외 ${paper.authors!.length - 3}인`}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-border/50 gap-2">
+                                    <span className="text-[10px] text-muted-foreground/60 truncate">
+                                      {paper.year ?? "연도 미상"}
+                                      {paper.journal ? ` · ${paper.journal}` : ""}
+                                    </span>
+                                    {paper.url && (
+                                      <a
+                                        href={paper.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-0.5 text-[10px] text-primary hover:text-primary/80 font-medium shrink-0"
+                                      >
+                                        <ExternalLink className="h-2.5 w-2.5" />
+                                        원문
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+
+                            {/* 더 보기 */}
+                            {papers.length < papersTotal && !papersLoading && (
+                              <button
+                                onClick={() => fetchPapers(selected.id, selected.label, papersPage + 1)}
+                                className="w-full text-xs text-muted-foreground hover:text-foreground py-2 border rounded-md hover:bg-muted/50 transition-colors"
+                              >
+                                더 보기 ({papers.length}/{papersTotal.toLocaleString()})
+                              </button>
+                            )}
+                            {papersLoading && papers.length > 0 && (
+                              <div className="flex justify-center py-2">
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
               </>
@@ -593,13 +751,63 @@ function TopicGraphPage() {
               </>
             ) : (
               // 안내 상태
-              <div className="flex flex-col items-center justify-center flex-1 px-4 py-10 text-center text-muted-foreground">
-                <Network className="h-10 w-10 mb-3 opacity-20" />
-                <p className="text-sm font-medium">주제를 탐색해보세요</p>
-                <p className="text-xs mt-1.5 opacity-70 leading-relaxed">
-                  검색 후 그래프의 노드를 클릭하면<br />
-                  관련 항목과 상세 정보가 여기에 표시됩니다
-                </p>
+              <div className="flex flex-col flex-1 overflow-y-auto">
+                <div className="p-4 border-b shrink-0">
+                  <p className="text-sm font-semibold">사용 방법</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">3단계로 논문 주제를 탐색해보세요</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  {/* 단계 1 */}
+                  <div className="flex gap-3 items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                    <div>
+                      <p className="text-sm font-medium">주제 검색</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                        위 검색창에 수행평가 주제를 입력하고 검색하세요.<br />
+                        <span className="text-foreground/60">예: 기후변화, 인공지능, 양자역학</span>
+                      </p>
+                    </div>
+                  </div>
+                  {/* 단계 2 */}
+                  <div className="flex gap-3 items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                    <div>
+                      <p className="text-sm font-medium">그래프에서 노드 클릭</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                        그래프에 나타난 원(노드)을 클릭하면 해당 주제의 관련 논문 수, 키워드, 하위 분야가 여기에 표시됩니다.
+                      </p>
+                    </div>
+                  </div>
+                  {/* 단계 3 */}
+                  <div className="flex gap-3 items-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                    <div>
+                      <p className="text-sm font-medium">상세 그래프로 깊이 탐색</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                        <span className="inline-flex items-center gap-0.5 font-medium text-foreground/70">주제(빨간 노드)</span>를 클릭하면 "상세 그래프 보기" 버튼이 나타납니다. 눌러서 연관 분야를 더 깊이 탐색하세요.
+                      </p>
+                    </div>
+                  </div>
+                  {/* 노드 색상 범례 */}
+                  <div className="rounded-lg border bg-muted/30 p-3 mt-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">노드 색상 안내</p>
+                    <div className="flex flex-col gap-1.5">
+                      {(Object.entries(NODE_COLORS) as [GraphNode["type"], string][]).map(([type, color]) => (
+                        <div key={type} className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full shrink-0 border border-black/10" style={{ background: color }} />
+                          <span className="text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground/70">{NODE_LABELS[type]}</span>
+                            {type === "domain" && " — 가장 큰 학문 분류"}
+                            {type === "field" && " — 전공/학과 수준"}
+                            {type === "subfield" && " — 세부 연구 분야"}
+                            {type === "topic" && " — 실제 연구 주제"}
+                            {type === "sibling" && " — 비슷한 연관 주제"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
