@@ -355,7 +355,7 @@ function TopicGraphPage() {
         {/* ── 좌: 그래프 캔버스 ───────────────────────────────────── */}
         <div
           ref={containerRef}
-          className="relative overflow-hidden rounded-xl border bg-white shadow-inner flex-1"
+          className="relative overflow-hidden rounded-xl border-2 border-slate-300 bg-white shadow-inner flex-1 ring-1 ring-slate-200/60"
           style={canvasStyle}
         >
           {/* 범례 — graphData 있을 때만 */}
