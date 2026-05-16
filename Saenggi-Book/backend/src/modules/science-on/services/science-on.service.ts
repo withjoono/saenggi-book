@@ -96,7 +96,9 @@ export class ScienceOnService {
       );
 
       const { total, records } = this.parseSearchXml(data);
-      const results = records.map((r) => this.mapRecord(r));
+      const allResults = records.map((r) => this.mapRecord(r));
+      // NDSL은 한국 저자의 영어 국제논문도 포함함 — 한국어 제목 없는 논문 제외
+      const results = allResults.filter(r => /[가-힣]/.test(r.titleKo || ''));
 
       return { total, page, perPage, results };
     } catch (error) {
