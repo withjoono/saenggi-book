@@ -27,7 +27,10 @@ async function bootstrap() {
         'https://ms-front.web.app', // 생기북 프론트엔드
         'https://ms-front.firebaseapp.com',
         'https://susi-front.web.app', // 수시 프론트엔드
-        'https://ts-front-479305.web.app', // Hub 프론트엔드
+        'https://ts-front-479305.web.app', // 생기북 default site (= tskool.kr origin)
+        'https://ts-front-479305.firebaseapp.com',
+        'https://www.tskool.kr', // 생기북 커스텀 도메인
+        'https://tskool.kr',
         'https://www.geobukschool.kr',
         'https://geobukschool.kr',
         // 로컬 개발 환경
