@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import { XMLParser } from 'fast-xml-parser';
 import { ScienceOnSearchDto } from '../dtos/science-on-query.dto';
+import { TranslationService } from '../../open-alex/services/translation.service';
 
 const BASE_URL = 'https://apigateway.kisti.re.kr';
 const AES_IV = 'jvHJ1EFA0IXBrxxz';
@@ -41,7 +42,10 @@ export class ScienceOnService {
     trimValues: true,
   });
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly translation: TranslationService,
+  ) {}
 
   async searchArticles(dto: ScienceOnSearchDto): Promise<{
     total: number;
@@ -55,7 +59,15 @@ export class ScienceOnService {
     const page = dto.page ?? 1;
     const perPage = dto.per_page ?? 10;
 
-    const searchQuery = JSON.stringify({ BI: dto.query });
+    // 영어 쿼리가 들어오면 한국어로 번역 후 검색 (ScienceON은 한국어 DB)
+    let koQuery = dto.query;
+    if (!this.translation.isKorean(dto.query)) {
+      const [translated] = await this.translation.toKorean([dto.query]);
+      koQuery = translated || dto.query;
+      this.logger.log(`ScienceON 쿼리 번역: "${dto.query}" → "${koQuery}"`);
+    }
+
+    const searchQuery = JSON.stringify({ BI: koQuery });
 
     const params = {
       client_id: this.clientId,

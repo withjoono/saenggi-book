@@ -13,6 +13,6 @@ import { TranslationService } from './services/translation.service';
   ],
   controllers: [OpenAlexController],
   providers: [OpenAlexService, TranslationService],
-  exports: [OpenAlexService],
+  exports: [OpenAlexService, TranslationService],
 })
 export class OpenAlexModule {}
