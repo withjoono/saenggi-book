@@ -441,12 +441,7 @@ function TopicGraphPage() {
               backgroundColor="#ffffff"
               nodeColor={(node) => NODE_COLORS[(node as GraphNode).type] ?? "#6b7280"}
               nodeVal={(node) => NODE_RADIUS[(node as GraphNode).type] ?? 8}
-              nodeLabel={(node) => {
-                const n = node as GraphNode;
-                return n.labelEn && n.labelEn !== n.label
-                  ? `${n.label} (${n.labelEn})`
-                  : n.label;
-              }}
+              nodeLabel={(node) => (node as GraphNode).label}
               linkColor={(link) =>
                 (link as GraphEdge).type === "sibling" ? "#9ca3af" : "#6b7280"
               }
@@ -689,19 +684,11 @@ function TopicGraphPage() {
                         <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm leading-tight">{r.label}</p>
-                          {r.labelEn && r.labelEn !== r.label && (
-                            <p className="text-xs text-muted-foreground/70 italic">{r.labelEn}</p>
-                          )}
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {[r.domain?.label, r.field?.label, r.subfield?.label]
                               .filter(Boolean)
                               .join(" › ")}
                           </p>
-                          {r.worksCount > 0 && (
-                            <p className="text-xs text-muted-foreground">
-                              논문 {r.worksCount.toLocaleString()}편
-                            </p>
-                          )}
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
                       </button>
