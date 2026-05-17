@@ -4,11 +4,10 @@ import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 import { publicClient } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Search, Loader2, BookOpen, Network, Maximize2, X,
-  ArrowLeft, ChevronRight, FileText, ExternalLink, ChevronDown, ChevronUp,
+  ArrowLeft, ChevronRight, ExternalLink, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -519,9 +518,6 @@ function TopicGraphPage() {
                     <h2 className="font-semibold text-sm leading-tight line-clamp-2">
                       {selected.label}
                     </h2>
-                    {selected.labelEn && selected.labelEn !== selected.label && (
-                      <p className="text-xs text-muted-foreground italic mt-0.5">{selected.labelEn}</p>
-                    )}
                   </div>
                   <button
                     onClick={() => setSelected(null)}
@@ -534,30 +530,6 @@ function TopicGraphPage() {
 
                 <ScrollArea className="flex-1">
                   <div className="p-4 space-y-4">
-                    {selected.description && (
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {selected.description}
-                      </p>
-                    )}
-
-                    {(selected.worksCount ?? 0) > 0 && (
-                      <div className="flex items-center gap-2 text-sm rounded-md bg-muted/50 px-3 py-2">
-                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span>관련 논문 <strong>{selected.worksCount!.toLocaleString()}</strong>편</span>
-                      </div>
-                    )}
-
-                    {(selected.keywords?.length ?? 0) > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1.5">키워드</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selected.keywords!.map((k) => (
-                            <Badge key={k} variant="outline" className="text-xs">{k}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     {childNodes.length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-muted-foreground mb-1.5">
