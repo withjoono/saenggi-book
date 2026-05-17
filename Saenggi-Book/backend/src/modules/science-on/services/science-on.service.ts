@@ -4,7 +4,6 @@ import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import { XMLParser } from 'fast-xml-parser';
 import { ScienceOnSearchDto } from '../dtos/science-on-query.dto';
-import { TranslationService } from '../../open-alex/services/translation.service';
 
 const BASE_URL = 'https://apigateway.kisti.re.kr';
 const AES_IV = 'jvHJ1EFA0IXBrxxz';
@@ -42,10 +41,7 @@ export class ScienceOnService {
     trimValues: true,
   });
 
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly translation: TranslationService,
-  ) {}
+  constructor(private readonly httpService: HttpService) {}
 
   async searchArticles(dto: ScienceOnSearchDto): Promise<{
     total: number;
@@ -58,22 +54,7 @@ export class ScienceOnService {
     const token = await this.getAccessToken();
     const page = dto.page ?? 1;
     const perPage = dto.per_page ?? 10;
-
-    // 영어 쿼리가 들어오면 한국어로 번역 후 검색 (ScienceON은 한국어 DB)
-    let koQuery = dto.query;
-    if (!this.translation.isKorean(dto.query)) {
-      const [translated] = await this.translation.toKorean([dto.query]);
-      koQuery = translated || dto.query;
-      this.logger.log(`ScienceON 쿼리 번역: "${dto.query}" → "${koQuery}"`);
-    }
-
-    // 번역 실패 시 영어 쿼리로 ScienceON 호출하면 502 오류 → 빈 결과 반환
-    if (!this.translation.isKorean(koQuery)) {
-      this.logger.warn(`ScienceON: 번역 실패로 검색 건너뜀 (원문: "${dto.query}")`);
-      return { total: 0, page, perPage, results: [] };
-    }
-
-    const searchQuery = JSON.stringify({ BI: koQuery });
+    const searchQuery = JSON.stringify({ BI: dto.query });
 
     const params = {
       client_id: this.clientId,
@@ -91,14 +72,15 @@ export class ScienceOnService {
         this.httpService.get<string>(`${BASE_URL}/openapicall.do`, {
           params,
           responseType: 'text',
-          transformResponse: (raw) => raw, // keep XML untouched
+          transformResponse: (raw) => raw,
         }),
       );
 
       const { total, records } = this.parseSearchXml(data);
-      const allResults = records.map((r) => this.mapRecord(r));
-      // NDSL은 한국 저자의 영어 국제논문도 포함함 — 한국어 제목 없는 논문 제외
-      const results = allResults.filter(r => /[가-힣]/.test(r.titleKo || ''));
+      // 한국어 제목이 없는 국제논문 제외
+      const results = records
+        .map((r) => this.mapRecord(r))
+        .filter((r) => /[가-힣]/.test(r.titleKo || ''));
 
       return { total, page, perPage, results };
     } catch (error) {
@@ -177,7 +159,6 @@ export class ScienceOnService {
 
     this.cachedToken = {
       accessToken,
-      // 보수적으로 30분 캐시. 실제 만료 시 재시도 로직은 향후 추가 가능.
       expiresAt: Date.now() + 30 * 60_000,
     };
     return accessToken;
@@ -187,7 +168,7 @@ export class ScienceOnService {
     const digits = new Date()
       .toISOString()
       .replace(/[^0-9]/g, '')
-      .slice(0, 14); // YYYYMMDDHHmmss
+      .slice(0, 14);
     const plain = JSON.stringify({ datetime: digits, mac_address: this.macAddress });
 
     const cipher = crypto.createCipheriv(
@@ -196,14 +177,12 @@ export class ScienceOnService {
       Buffer.from(AES_IV, 'utf8'),
     );
     const encrypted = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
-    // urlsafe base64. axios가 params 값을 URL 인코딩하므로 여기서는 추가 인코딩하지 않음.
     return encrypted.toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
   }
 
   private extractAccessToken(payload: string): string | null {
     if (!payload) return null;
     const trimmed = payload.trim();
-    // JSON 응답일 수도 있음
     if (trimmed.startsWith('{')) {
       try {
         const obj = JSON.parse(trimmed);
@@ -212,7 +191,6 @@ export class ScienceOnService {
         /* fallthrough */
       }
     }
-    // XML 응답
     try {
       const parsed: any = this.xmlParser.parse(trimmed);
       return (
